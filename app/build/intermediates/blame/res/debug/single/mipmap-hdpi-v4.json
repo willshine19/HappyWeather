@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/mipmap-hdpi-v4/ic_launcher.png",
+        "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/src/main/res/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/mipmap-hdpi-v4/home.png",
+        "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/src/main/res/mipmap-hdpi/home.png"
+    },
+    {
+        "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/mipmap-hdpi-v4/refresh.png",
+        "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/src/main/res/mipmap-hdpi/refresh.png"
+    }
+]
