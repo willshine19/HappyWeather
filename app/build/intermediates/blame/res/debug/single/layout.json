@@ -1,11 +1,11 @@
 [
     {
-        "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/layout/abc_list_menu_item_icon.xml",
-        "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.2.1/res/layout/abc_list_menu_item_icon.xml"
-    },
-    {
         "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/layout/notification_template_part_chronometer.xml",
         "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.2.1/res/layout/notification_template_part_chronometer.xml"
+    },
+    {
+        "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/layout/abc_list_menu_item_icon.xml",
+        "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.2.1/res/layout/abc_list_menu_item_icon.xml"
     },
     {
         "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/layout/abc_action_menu_item_layout.xml",
@@ -118,6 +118,10 @@
     {
         "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/layout/abc_search_dropdown_item_icons_2line.xml",
         "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.2.1/res/layout/abc_search_dropdown_item_icons_2line.xml"
+    },
+    {
+        "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/layout/activity_loading.xml",
+        "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/src/main/res/layout/activity_loading.xml"
     },
     {
         "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/layout/notification_template_big_media_narrow.xml",

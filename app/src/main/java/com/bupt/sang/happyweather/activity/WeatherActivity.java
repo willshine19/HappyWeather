@@ -6,8 +6,11 @@ import com.bupt.sang.happyweather.util.HttpUtil;
 import com.bupt.sang.happyweather.util.Utility;
 import com.bupt.sang.happyweather.R;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -15,11 +18,14 @@ import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class WeatherActivity extends Activity implements OnClickListener{
 
+	private static boolean hasShowAbout = false;
+	private static final String TAG = "[syh]WeatherActivity";
 	private LinearLayout weatherInfoLayout;
 	/**
 	 * 用于显示城市名
@@ -77,11 +83,20 @@ public class WeatherActivity extends Activity implements OnClickListener{
 			cityNameText.setVisibility(View.INVISIBLE);
 			queryWeatherCode(countyCode);
 		} else {
-			// 没有县级代号时就直接显示本地天气
-			showWeather();
+			// 从引导页直接启动，默认加载“舒兰”
+			publishText.setText("同步中...");
+			weatherInfoLayout.setVisibility(View.INVISIBLE);
+			cityNameText.setVisibility(View.INVISIBLE);
+			queryWeatherCode("101040300");
 		}
+
 		switchCity.setOnClickListener(this);
 		refreshWeather.setOnClickListener(this);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
+		if (!prefs.getBoolean("dontShow", false) && !hasShowAbout) {
+			showAboutDialog();
+			hasShowAbout = true;
+		}
 	}
 	
 	@Override
@@ -105,7 +120,46 @@ public class WeatherActivity extends Activity implements OnClickListener{
 			break;
 		}
 	}
-	
+
+	private void showAboutDialog() {
+		final CheckBox checkBox = new CheckBox(WeatherActivity.this);//勾选
+		checkBox.setText("不在显示");//不再显示
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("关于");
+		builder.setMessage("乐天天气是由sangyaohui开发的一款的开源天气预报软件，本软件主要作为学习和交流使用。");
+		builder.setView(checkBox);
+		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
+				edit.putBoolean("dontShow", checkBox.isChecked());
+				edit.commit();
+			}
+		});
+		builder.setNegativeButton("关于作者", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				String url = "http://blog.csdn.net/willshine19";
+				Intent i = new Intent(Intent.ACTION_VIEW);
+				i.setData(Uri.parse(url));
+				startActivity(i);
+			}
+		});
+		builder.setNeutralButton("关于demo", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				String url = "https://github.com/willshine19/HappyWeather";
+				Intent i = new Intent(Intent.ACTION_VIEW);
+				i.setData(Uri.parse(url));
+				startActivity(i);
+			}
+		});
+		builder.show();
+	}
+
 	/**
 	 * 查询县级代号所对应的天气代号。
 	 */
@@ -152,6 +206,7 @@ public class WeatherActivity extends Activity implements OnClickListener{
 			
 			@Override
 			public void onError(Exception e) {
+				e.printStackTrace();
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {

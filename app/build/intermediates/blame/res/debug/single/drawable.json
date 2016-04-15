@@ -28,6 +28,10 @@
         "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.2.1/res/drawable/abc_spinner_textfield_background_material.xml"
     },
     {
+        "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/drawable/launcher.png",
+        "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/src/main/res/drawable/launcher.png"
+    },
+    {
         "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/drawable/abc_btn_check_material.xml",
         "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.2.1/res/drawable/abc_btn_check_material.xml"
     },
@@ -88,8 +92,16 @@
         "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.2.1/res/drawable/abc_list_selector_background_transition_holo_dark.xml"
     },
     {
+        "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/drawable/new_londing.png",
+        "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/src/main/res/drawable/new_londing.png"
+    },
+    {
         "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/drawable/abc_list_selector_background_transition_holo_light.xml",
         "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.2.1/res/drawable/abc_list_selector_background_transition_holo_light.xml"
+    },
+    {
+        "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/drawable/weather.jpg",
+        "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/src/main/res/drawable/weather.jpg"
     },
     {
         "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/drawable/abc_seekbar_thumb_material.xml",
@@ -100,7 +112,19 @@
         "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.2.1/res/drawable/abc_item_background_holo_dark.xml"
     },
     {
+        "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/drawable/refresh.png",
+        "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/src/main/res/drawable/refresh.png"
+    },
+    {
         "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/drawable/abc_tab_indicator_material.xml",
         "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.2.1/res/drawable/abc_tab_indicator_material.xml"
+    },
+    {
+        "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/drawable/londing.jpg",
+        "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/src/main/res/drawable/londing.jpg"
+    },
+    {
+        "merged": "/home/sang/AndroidStudioProjects/HappyWeather/app/build/intermediates/res/merged/debug/drawable/home.png",
+        "source": "/home/sang/AndroidStudioProjects/HappyWeather/app/src/main/res/drawable/home.png"
     }
 ]

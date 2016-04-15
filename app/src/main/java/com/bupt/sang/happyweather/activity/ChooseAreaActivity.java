@@ -2,14 +2,10 @@ package com.bupt.sang.happyweather.activity;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -18,7 +14,6 @@ import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -112,52 +107,10 @@ public class ChooseAreaActivity extends Activity {
 			}
 		});
 		queryProvinces();  // 加载省级数据
-//		AboutDialog logOutDialog = new AboutDialog();
-//        logOutDialog.show(getSupportFragmentManager(), "dialog");
-		prefs = PreferenceManager.getDefaultSharedPreferences(ChooseAreaActivity.this);
-		if (!prefs.getBoolean("dontShow", false)) {
-			showAboutDialog();
-		}
+
 	}
 
-	private void showAboutDialog() {
-		final CheckBox checkBox = new CheckBox(ChooseAreaActivity.this);//勾选
-        checkBox.setText("不在显示");//不再显示
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("关于");
-		builder.setMessage("乐天天气由sangyaohui开发的一款的开源天气预报软件，本软件主要作为学习和交流使用。");
-		builder.setView(checkBox);
-		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(ChooseAreaActivity.this).edit();
-				edit.putBoolean("dontShow", checkBox.isChecked());
-				edit.commit();
-			}
-		});
-		builder.setNegativeButton("关于作者", new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				String url = "http://blog.csdn.net/willshine19";
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(url));
-                startActivity(i);
-			}
-		});
-		builder.setNeutralButton("关于demo", new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				String url = "https://github.com/willshine19/HappyWeather";
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(url));
-                startActivity(i);
-			}
-		});
-		builder.show();
-	}
+
 
 	/**
 	 * 查询全国所有的省，优先从数据库查询，如果没有查询到再去服务器上查询。
