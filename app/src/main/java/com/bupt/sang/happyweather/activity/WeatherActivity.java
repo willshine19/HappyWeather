@@ -1,6 +1,7 @@
 package com.bupt.sang.happyweather.activity;
 
 import com.bupt.sang.happyweather.service.AutoUpdateService;
+import com.bupt.sang.happyweather.service.ForegroundService;
 import com.bupt.sang.happyweather.util.HttpCallbackListener;
 import com.bupt.sang.happyweather.util.HttpUtil;
 import com.bupt.sang.happyweather.util.Utility;
@@ -75,6 +76,10 @@ public class WeatherActivity extends Activity implements OnClickListener{
 		currentDateText = (TextView) findViewById(R.id.current_date);
 		switchCity = (Button) findViewById(R.id.switch_city);
 		refreshWeather = (Button) findViewById(R.id.refresh_weather);
+		String weatherCode = getIntent().getStringExtra("weather_code");
+		if (!TextUtils.isEmpty(weatherCode)) {
+			queryWeatherInfo(weatherCode);
+		}
 		String countyCode = getIntent().getStringExtra("county_code");
 		if (!TextUtils.isEmpty(countyCode)) {
 			// 有县级代号时就去查询天气
@@ -222,7 +227,7 @@ public class WeatherActivity extends Activity implements OnClickListener{
 	 */
 	private void showWeather() {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		cityNameText.setText( prefs.getString("city_name", ""));
+		cityNameText.setText(prefs.getString("city_name", ""));
 		temp1Text.setText(prefs.getString("temp1", ""));
 		temp2Text.setText(prefs.getString("temp2", ""));
 		weatherDespText.setText(prefs.getString("weather_desp", ""));
@@ -232,6 +237,8 @@ public class WeatherActivity extends Activity implements OnClickListener{
 		cityNameText.setVisibility(View.VISIBLE);
 		Intent intent = new Intent(this, AutoUpdateService.class);
 		startService(intent);
+		Intent foreServiceIntent = new Intent(this, ForegroundService.class);
+		startService(foreServiceIntent);
 	}
 
 }
