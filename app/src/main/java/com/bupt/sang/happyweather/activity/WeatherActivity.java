@@ -4,6 +4,7 @@ import com.bupt.sang.happyweather.service.AutoUpdateService;
 import com.bupt.sang.happyweather.service.ForegroundService;
 import com.bupt.sang.happyweather.util.HttpCallbackListener;
 import com.bupt.sang.happyweather.util.HttpUtil;
+import com.bupt.sang.happyweather.util.RefreshableView;
 import com.bupt.sang.happyweather.util.Utility;
 import com.bupt.sang.happyweather.R;
 import android.app.Activity;
@@ -60,7 +61,8 @@ public class WeatherActivity extends Activity implements OnClickListener{
 	 * 更新天气按钮
 	 */
 	private Button refreshWeather;
-	
+	private RefreshableView refreshableView;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -76,6 +78,18 @@ public class WeatherActivity extends Activity implements OnClickListener{
 		currentDateText = (TextView) findViewById(R.id.current_date);
 		switchCity = (Button) findViewById(R.id.switch_city);
 		refreshWeather = (Button) findViewById(R.id.refresh_weather);
+		refreshableView = (RefreshableView) findViewById(R.id.refreshable_view);
+		refreshableView.setOnRefreshListener(new RefreshableView.PullToRefreshListener() {
+			public void onRefresh() {
+				try {
+					Thread.sleep(500);
+//					refreshWeather();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				refreshableView.finishRefreshing();
+			}
+		}, 0);
 		String weatherCode = getIntent().getStringExtra("weather_code");
 		if (!TextUtils.isEmpty(weatherCode)) {
 			queryWeatherInfo(weatherCode);
@@ -92,7 +106,7 @@ public class WeatherActivity extends Activity implements OnClickListener{
 			publishText.setText("同步中...");
 			weatherInfoLayout.setVisibility(View.INVISIBLE);
 			cityNameText.setVisibility(View.INVISIBLE);
-			queryWeatherCode("101040300");
+			queryWeatherInfo("101010200");
 		}
 
 		switchCity.setOnClickListener(this);
@@ -114,15 +128,20 @@ public class WeatherActivity extends Activity implements OnClickListener{
 			finish();
 			break;
 		case R.id.refresh_weather:
-			publishText.setText("同步中...");
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-			String weatherCode = prefs.getString("weather_code", "");
-			if (!TextUtils.isEmpty(weatherCode)) {
-				queryWeatherInfo(weatherCode);
-			}
+			refreshWeather();
 			break;
 		default:
 			break;
+		}
+	}
+
+	// 更新天气
+	private void refreshWeather() {
+		publishText.setText("同步中...");
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		String weatherCode = prefs.getString("weather_code", "");
+		if (!TextUtils.isEmpty(weatherCode)) {
+			queryWeatherInfo(weatherCode);
 		}
 	}
 
