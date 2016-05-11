@@ -1,5 +1,7 @@
 package com.bupt.sang.happyweather.activity;
 
+import com.bupt.sang.happyweather.adapter.ViewPagerAdapter;
+import com.bupt.sang.happyweather.model.WeatherInfo;
 import com.bupt.sang.happyweather.service.AutoUpdateService;
 import com.bupt.sang.happyweather.service.ForegroundService;
 import com.bupt.sang.happyweather.util.HttpCallbackListener;
@@ -15,107 +17,161 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class WeatherActivity extends Activity implements OnClickListener{
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+public class WeatherActivity extends Activity implements OnClickListener, ViewPager.OnPageChangeListener{
 
 	private static boolean hasShowAbout = false;
 	private static final String TAG = "[syh]WeatherActivity";
-	private LinearLayout weatherInfoLayout;
+	private ViewPager viewPager;
+	private ViewPagerAdapter adapter;
 	/**
-	 * 用于显示城市名
+	 * 一组View，将会被添加到ViewPager中
 	 */
-	private TextView cityNameText;
-	/**
-	 * 用于显示发布时间
-	 */
-	private TextView publishText;
-	/**
-	 * 用于显示天气描述信息
-	 */
-	private TextView weatherDespText;
-	/**
-	 * 用于显示气温1
-	 */
-	private TextView temp1Text;
-	/**
-	 * 用于显示气温2
-	 */
-	private TextView temp2Text;
-	/**
-	 * 用于显示当前日期
-	 */
-	private TextView currentDateText;
+	private List<View> viewList;
+	private List<String> weatherIdList =  new ArrayList<String>(); // 待显示的所有天气id
+	private Map<String, View> weatherIdViewMap;
+	private Map<String, WeatherInfo> weatherIdWeatherInfoMap = new HashMap<>();
+
+	private TextView cityNameTV;
 	/**
 	 * 切换城市按钮
 	 */
 	private Button switchCity;
-	/**
-	 * 更新天气按钮
-	 */
-	private Button refreshWeather;
-	private RefreshableView refreshableView;
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		// TODO: 2016/5/9
+		super.onNewIntent(intent);
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.weather_layout);
-		// 初始化各控件
-		weatherInfoLayout = (LinearLayout) findViewById(R.id.weather_info_layout);
-		cityNameText = (TextView) findViewById(R.id.city_name);
-		publishText = (TextView) findViewById(R.id.publish_text);
-		weatherDespText = (TextView) findViewById(R.id.weather_desp);
-		temp1Text = (TextView) findViewById(R.id.temp1);
-		temp2Text = (TextView) findViewById(R.id.temp2);
-		currentDateText = (TextView) findViewById(R.id.current_date);
-		switchCity = (Button) findViewById(R.id.switch_city);
-		refreshWeather = (Button) findViewById(R.id.refresh_weather);
-		refreshableView = (RefreshableView) findViewById(R.id.refreshable_view);
-		refreshableView.setOnRefreshListener(new RefreshableView.PullToRefreshListener() {
-			public void onRefresh() {
-				try {
-					Thread.sleep(500);
-//					refreshWeather();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				refreshableView.finishRefreshing();
-			}
-		}, 0);
+
+		init();
+
 		String weatherCode = getIntent().getStringExtra("weather_code");
 		if (!TextUtils.isEmpty(weatherCode)) {
-			queryWeatherInfo(weatherCode);
+//			queryWeatherInfo(weatherCode);
+			Log.e(TAG, "onCreate: weatherCode in intent");
 		}
+
 		String countyCode = getIntent().getStringExtra("county_code");
 		if (!TextUtils.isEmpty(countyCode)) {
 			// 有县级代号时就去查询天气
-			publishText.setText("同步中...");
-			weatherInfoLayout.setVisibility(View.INVISIBLE);
-			cityNameText.setVisibility(View.INVISIBLE);
+//			publishText.setText("同步中...");
+//			weatherInfoLayout.setVisibility(View.INVISIBLE);
+//			cityNameTV.setVisibility(View.INVISIBLE);
+			weatherIdList.add(countyId2WeatherId(countyCode));
 			queryWeatherCode(countyCode);
-		} else {
-			// 从引导页直接启动，默认加载“舒兰”
-			publishText.setText("同步中...");
-			weatherInfoLayout.setVisibility(View.INVISIBLE);
-			cityNameText.setVisibility(View.INVISIBLE);
-			queryWeatherInfo("101010200");
 		}
 
-		switchCity.setOnClickListener(this);
-		refreshWeather.setOnClickListener(this);
+		loadWeather();
+
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
 		if (!prefs.getBoolean("dontShow", false) && !hasShowAbout) {
 			showAboutDialog();
 			hasShowAbout = true;
 		}
+	}
+
+	/**
+	 * 开始加载所有天气
+	 */
+	private void loadWeather() {
+		for (String weatherId : weatherIdList) {
+			queryWeatherInfo(weatherId);
+		}
+	}
+
+	private void init() {
+		initWeatherIdList();
+		cityNameTV = (TextView) findViewById(R.id.city_name);
+		cityNameTV.setText("北京"); // TODO: 2016/5/11
+		viewList = initList(weatherIdList.size());
+		weatherIdViewMap = initMap();
+		switchCity = (Button) findViewById(R.id.switch_city);
+
+		switchCity.setOnClickListener(this);
+		viewPager = (ViewPager) findViewById(R.id.syh_viewpager);
+
+		adapter = new ViewPagerAdapter(viewList, this);
+		viewPager.setAdapter(adapter);
+		viewPager.setOnPageChangeListener(this);
+	}
+
+	/**
+	 * 天气列表中默认有北上广三个城市的天气id
+	 */
+	private void initWeatherIdList() {
+		weatherIdList.add("101010100"); // 北京
+		weatherIdList.add("101020100"); // 上海
+		weatherIdList.add("101280101"); // 广州
+	}
+
+	/**
+	 * 初始化viewList，一组View，这些View将被添加到ViewPager中，View的个数等于待显示天气的个数
+	 * @param num
+	 * @return
+     */
+	private List<View> initList(int num) {
+		LayoutInflater inflater = LayoutInflater.from(this);
+		List<View> list = new ArrayList<View>();
+		for (int i = 0; i < num; i++) {
+			final RefreshableView refreshableView = (RefreshableView) inflater.inflate(R.layout.viewpager_content, null);
+
+			refreshableView.setOnRefreshListener(new RefreshableView.PullToRefreshListener() {
+				public void onRefresh() {
+					try {
+						Thread.sleep(500);
+//					refreshWeather();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					refreshableView.finishRefreshing();
+				}
+			}, 0);
+			list.add(refreshableView);
+		}
+		return list;
+	}
+
+	/**
+	 * 初始化weatherIdViewMap
+	 * @return
+     */
+	private Map<String, View> initMap() {
+		Map<String, View> map = new HashMap<String, View>();
+		for (int i = 0; i < weatherIdList.size(); i++) {
+			map.put(weatherIdList.get(i), viewList.get(i));
+		}
+		return map;
 	}
 	
 	@Override
@@ -137,7 +193,8 @@ public class WeatherActivity extends Activity implements OnClickListener{
 
 	// 更新天气
 	private void refreshWeather() {
-		publishText.setText("同步中...");
+		// TODO: 2016/5/11
+//		publishText.setText("同步中...");
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		String weatherCode = prefs.getString("weather_code", "");
 		if (!TextUtils.isEmpty(weatherCode)) {
@@ -145,6 +202,9 @@ public class WeatherActivity extends Activity implements OnClickListener{
 		}
 	}
 
+	/**
+	 * 首次启动app时，显示一个About对话框
+	 */
 	private void showAboutDialog() {
 		final CheckBox checkBox = new CheckBox(WeatherActivity.this);//勾选
 		checkBox.setText("不在显示");//不再显示
@@ -222,8 +282,12 @@ public class WeatherActivity extends Activity implements OnClickListener{
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
+							Log.d(TAG, "下载天气" + response);
+							addWeatherInfo(new WeatherInfo(response));
 							showWeather();
+//							showWeather(response);
 						}
+
 					});
 				}
 			}
@@ -234,30 +298,126 @@ public class WeatherActivity extends Activity implements OnClickListener{
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						publishText.setText("同步失败");
+//						publishText.setText("同步失败");
+						Toast.makeText(WeatherActivity.this, "同步失败", Toast.LENGTH_SHORT).show();
 					}
 				});
 			}
 		});
 	}
-	
-	/**
-	 * 从SharedPreferences文件中读取存储的天气信息，并显示到界面上。
-	 */
-	private void showWeather() {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		cityNameText.setText(prefs.getString("city_name", ""));
-		temp1Text.setText(prefs.getString("temp1", ""));
-		temp2Text.setText(prefs.getString("temp2", ""));
-		weatherDespText.setText(prefs.getString("weather_desp", ""));
-		publishText.setText("今天" + prefs.getString("publish_time", "") + "发布");
-		currentDateText.setText(prefs.getString("current_date", ""));
-		weatherInfoLayout.setVisibility(View.VISIBLE);
-		cityNameText.setVisibility(View.VISIBLE);
-		Intent intent = new Intent(this, AutoUpdateService.class);
-		startService(intent);
-		Intent foreServiceIntent = new Intent(this, ForegroundService.class);
-		startService(foreServiceIntent);
+
+
+	public void addWeatherInfo(WeatherInfo info) {
+		Log.d(TAG, "addWeatherInfo: info name is " + info.getCityName());
+		weatherIdWeatherInfoMap.put(info.getWeatherCode(), info);
 	}
 
+	/**
+	 * 显示天气
+	 * @param response JSON字符串
+     */
+	private void showWeather(String response) {
+		try {
+			JSONObject jsonObject = new JSONObject(response);
+			JSONObject json = jsonObject.getJSONObject("weatherinfo");
+			String cityName = json.getString("city"); // TODO: 2016/5/9
+			String weatherCode = json.getString("cityid");
+			String temp1 = json.getString("temp1");
+			String temp2 = json.getString("temp2");
+			String weatherDesp = json.getString("weather");
+			String publishTime = json.getString("ptime");
+
+			RefreshableView refreshableView = (RefreshableView) weatherIdViewMap.get(weatherCode);
+			if (refreshableView == null) {
+				// TODO: 2016/5/9
+			}
+			RelativeLayout relativeLayout = (RelativeLayout) refreshableView.getChildAt(1);
+			TextView publishTimeTv = (TextView) relativeLayout.getChildAt(0);
+			LinearLayout linearLayout = (LinearLayout) relativeLayout.getChildAt(1);
+			TextView currentDateTv = (TextView) linearLayout.getChildAt(0);
+			TextView weatherDespTv = (TextView) linearLayout.getChildAt(1);
+			LinearLayout linearLayoutHorizental = (LinearLayout) linearLayout.getChildAt(2);
+			TextView cityNameTv = (TextView) linearLayout.getChildAt(3); // TODO: 2016/5/9  
+			TextView temp1Tv = (TextView) linearLayoutHorizental.getChildAt(0);
+			TextView temp2Tv = (TextView) linearLayoutHorizental.getChildAt(2);
+
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月d日", Locale.CHINA);
+			publishTimeTv.setText("今天" + publishTime + "发布");
+			currentDateTv.setText(sdf.format(new Date()));
+			weatherDespTv.setText(weatherDesp);
+			temp1Tv.setText(temp1);
+			temp2Tv.setText(temp2);
+			cityNameTv.setText(cityName);
+
+			WeatherInfo weatherInfo = new WeatherInfo(json);
+			weatherIdWeatherInfoMap.put(weatherCode, weatherInfo);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 从所有WeatherInfo中读取天气信息，并显示到界面上。
+	 */
+	private void showWeather() {
+		if (weatherIdList.size() != weatherIdWeatherInfoMap.size()) {
+			Log.e(TAG, "showWeather 无法显示天气:weatherIdList.size() = " + weatherIdList.size() + ", weatherIdWeatherInfoMap.size() = " + weatherIdWeatherInfoMap.size());
+			return;
+		}
+
+		for (int i = 0; i < weatherIdList.size(); i++) {
+			WeatherInfo info = weatherIdWeatherInfoMap.get(weatherIdList.get(i));
+			RefreshableView refreshableView = (RefreshableView) weatherIdViewMap.get(info.getWeatherCode());
+			if (refreshableView == null) {
+				// TODO: 2016/5/9
+			}
+			RelativeLayout relativeLayout = (RelativeLayout) refreshableView.getChildAt(1);
+			TextView publishTimeTv = (TextView) relativeLayout.getChildAt(0);
+			LinearLayout linearLayout = (LinearLayout) relativeLayout.getChildAt(1);
+			TextView currentDateTv = (TextView) linearLayout.getChildAt(0);
+			TextView weatherDespTv = (TextView) linearLayout.getChildAt(1);
+			LinearLayout linearLayoutHorizental = (LinearLayout) linearLayout.getChildAt(2);
+			TextView cityNameTv = (TextView) linearLayout.getChildAt(3); // TODO: 2016/5/9
+			TextView temp1Tv = (TextView) linearLayoutHorizental.getChildAt(0);
+			TextView temp2Tv = (TextView) linearLayoutHorizental.getChildAt(2);
+
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月d日", Locale.CHINA);
+			publishTimeTv.setText("今天" + info.getPublishTime() + "发布");
+			currentDateTv.setText(sdf.format(new Date()));
+			weatherDespTv.setText(info.getWeatherDesp());
+			temp1Tv.setText(info.getTemp1());
+			temp2Tv.setText(info.getTemp2());
+			cityNameTv.setText(info.getCityName());
+		}
+
+		// TODO: 2016/5/11 前台服务
+//		Intent intent = new Intent(this, AutoUpdateService.class);
+//		startService(intent);
+//		Intent foreServiceIntent = new Intent(this, ForegroundService.class);
+//		startService(foreServiceIntent);
+	}
+
+	private String countyId2WeatherId(String str) {
+		// TODO: 2016/5/9  讲一个县的id转为一个天气的id
+		return new String("todo");
+	}
+
+
+	@Override
+	public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
+
+	@Override
+	public void onPageSelected(int position) {
+		String weatherId = weatherIdList.get(viewPager.getCurrentItem());
+		WeatherInfo info = weatherIdWeatherInfoMap.get(weatherId);
+		if (info == null) {
+			Log.e(TAG, "onPageSelected: 无法显示天气");
+		}
+		if (cityNameTV != null) {
+			cityNameTV.setText(info.getCityName());
+		}
+	}
+
+	@Override
+	public void onPageScrollStateChanged(int state) {}
 }

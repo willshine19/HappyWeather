@@ -4,8 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -286,27 +286,6 @@ public class RefreshableView extends LinearLayout {
 			} else {
 				ableToPull = false;
 			}
-				// 如果首个元素的上边缘，距离父布局值为0，就说明ListView滚动到了最顶部，此时应该允许下拉刷新
-//				ableToPull = true;
-//			View firstChild = relativeLayout.getChildAt(0);
-//			if (firstChild != null) {
-//				if (firstChild.getTop() == 0) {
-//					if (!ableToPull) {
-//						yDown = event.getRawY();
-//					}
-//					// 如果首个元素的上边缘，距离父布局值为0，就说明ListView滚动到了最顶部，此时应该允许下拉刷新
-//					ableToPull = true;
-//				} else {
-//					if (headerLayoutParams.topMargin != hideHeaderHeight) {
-//						headerLayoutParams.topMargin = hideHeaderHeight;
-//						header.setLayoutParams(headerLayoutParams);
-//					}
-//					ableToPull = false;
-//				}
-//			} else {
-//				// 如果ListView中没有元素，也应该允许下拉刷新
-//				ableToPull = true;
-//			}
 		}
 	};
 	
@@ -355,6 +334,57 @@ public class RefreshableView extends LinearLayout {
 			refreshUpdatedAtValue();
 		}
 	}
+
+
+//	private int state = 0;
+//	private final static int STATE_NO_SCRLL = 0;
+//	private final static int STATE_SCROLL_X = 1;
+//	private final static int STATE_SCROLL_Y = 2;
+//	private float lastX;
+//	private float lastY;
+//	@Override
+//	public boolean onInterceptTouchEvent(MotionEvent ev) {
+//		if (state == STATE_NO_SCRLL) {
+//			setState(ev);
+//		}
+//
+//		if (state == STATE_SCROLL_Y) {
+//			// 正在上下滑动
+//			if (ev.getAction() == MotionEvent.ACTION_UP) {
+//				state = STATE_NO_SCRLL;
+//			}
+//			return true; // 拦截
+//		} else if (state == STATE_SCROLL_X) {
+//			return false;
+//		}
+//
+//		return super.onInterceptTouchEvent(ev);
+//	}
+//
+//	private void setState(MotionEvent ev) {
+//		switch (ev.getAction()) {
+//			case MotionEvent.ACTION_DOWN:
+//				lastX = ev.getX();
+//				lastY = ev.getY();
+//				break;
+//			case MotionEvent.ACTION_MOVE:
+//				float deltaX = ev.getX() - lastX;
+//				float deltaY = ev.getY() - lastY;
+//				if (Math.abs(deltaX) > 20 && Math.abs(deltaX) > Math.abs(deltaY)) {
+//					state = STATE_SCROLL_X;
+//				}
+//				if (Math.abs(deltaY) > 20 && Math.abs(deltaX) < Math.abs(deltaY)) {
+//					state = STATE_SCROLL_Y;
+//				}
+//				break;
+//			case MotionEvent.ACTION_UP:
+//				state = STATE_NO_SCRLL;
+//				break;
+//			default:
+//				break;
+//		}
+//
+//	}
 
 	/**
 	 * 根据当前的状态来旋转箭头。
