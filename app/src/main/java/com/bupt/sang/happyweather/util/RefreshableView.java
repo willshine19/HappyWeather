@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -80,7 +81,7 @@ public class RefreshableView extends LinearLayout {
 	 * 上次更新时间的字符串常量，用于作为SharedPreferences的键值
 	 */
 	private static final String UPDATED_AT = "updated_at";
-	private static final String TAG = "syh";
+	private static final String TAG = "RefreshableView";
 
 	/**
 	 * 下拉刷新的回调接口
@@ -193,9 +194,12 @@ public class RefreshableView extends LinearLayout {
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
 		super.onLayout(changed, l, t, r, b);
 		if (changed && !loadOnce) {
+			Log.d(TAG, "[0]onLayout: header.getHeight() = " + header.getHeight());
 			hideHeaderHeight = -header.getHeight();
 			headerLayoutParams = (MarginLayoutParams) header.getLayoutParams();
+			Log.d(TAG, "[1]onLayout: headerLayoutParams.topMargin = " + headerLayoutParams.topMargin);
 			headerLayoutParams.topMargin = hideHeaderHeight; // 负数
+			Log.d(TAG, "[2]onLayout: headerLayoutParams.topMargin = " + headerLayoutParams.topMargin);
 			relativeLayout = (RelativeLayout) getChildAt(1);
 			relativeLayout.setOnTouchListener(listner);
 			loadOnce = true;

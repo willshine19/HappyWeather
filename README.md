@@ -10,4 +10,8 @@
 但是bug很多：不能加天气，第三个天气header位置不对，城市名不能正常显示
 
 2016-05-11
-修复了城市名显示的问题
+修复了城市名显示的问题，更换了PagerAdapter，用Fragment代替View。
+问题：header的位置问题依然没有解决。
+
+待完善
+用volly gson header的位置问题 添加关注 加号按钮

@@ -2,14 +2,12 @@ package com.bupt.sang.happyweather.activity;
 
 import com.bupt.sang.happyweather.adapter.ViewPagerAdapter;
 import com.bupt.sang.happyweather.model.WeatherInfo;
-import com.bupt.sang.happyweather.service.AutoUpdateService;
-import com.bupt.sang.happyweather.service.ForegroundService;
 import com.bupt.sang.happyweather.util.HttpCallbackListener;
 import com.bupt.sang.happyweather.util.HttpUtil;
 import com.bupt.sang.happyweather.util.RefreshableView;
 import com.bupt.sang.happyweather.util.Utility;
 import com.bupt.sang.happyweather.R;
-import android.app.Activity;
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,6 +15,10 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -42,19 +44,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class WeatherActivity extends Activity implements OnClickListener, ViewPager.OnPageChangeListener{
+public class WeatherActivity extends FragmentActivity implements OnClickListener, ViewPager.OnPageChangeListener{
 
 	private static boolean hasShowAbout = false;
 	private static final String TAG = "[syh]WeatherActivity";
 	private ViewPager viewPager;
-	private ViewPagerAdapter adapter;
+//	private ViewPagerAdapter adapter;
+	private PagerAdapter fragmentAdapter;
 	/**
 	 * 一组View，将会被添加到ViewPager中
 	 */
 	private List<View> viewList;
 	private List<String> weatherIdList =  new ArrayList<String>(); // 待显示的所有天气id
 	private Map<String, View> weatherIdViewMap;
-	private Map<String, WeatherInfo> weatherIdWeatherInfoMap = new HashMap<>();
+	public static Map<String, WeatherInfo> weatherIdWeatherInfoMap = new HashMap<>();
 
 	private TextView cityNameTV;
 	/**
@@ -74,7 +77,10 @@ public class WeatherActivity extends Activity implements OnClickListener, ViewPa
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.weather_layout);
 
-		init();
+		initWeatherIdList();
+//		weatherIdViewMap = initMap();
+//		viewList = initList(weatherIdList.size());
+		initViews();
 
 		String weatherCode = getIntent().getStringExtra("weather_code");
 		if (!TextUtils.isEmpty(weatherCode)) {
@@ -110,19 +116,30 @@ public class WeatherActivity extends Activity implements OnClickListener, ViewPa
 		}
 	}
 
-	private void init() {
-		initWeatherIdList();
+	private void initViews() {
 		cityNameTV = (TextView) findViewById(R.id.city_name);
 		cityNameTV.setText("北京"); // TODO: 2016/5/11
-		viewList = initList(weatherIdList.size());
-		weatherIdViewMap = initMap();
+
 		switchCity = (Button) findViewById(R.id.switch_city);
-
 		switchCity.setOnClickListener(this);
-		viewPager = (ViewPager) findViewById(R.id.syh_viewpager);
 
-		adapter = new ViewPagerAdapter(viewList, this);
-		viewPager.setAdapter(adapter);
+		viewPager = (ViewPager) findViewById(R.id.syh_viewpager);
+//		adapter = new ViewPagerAdapter(viewList, this);
+//		viewPager.setAdapter(adapter);
+		FragmentManager fm = getSupportFragmentManager();
+		fragmentAdapter = new FragmentStatePagerAdapter(fm) {
+
+			@Override
+			public int getCount() {
+				return weatherIdList.size();
+			}
+
+			@Override
+			public android.support.v4.app.Fragment getItem(int position) {
+				return WeatherFragment.newInstance(weatherIdList.get(position));
+			}
+		};
+		viewPager.setAdapter(fragmentAdapter);
 		viewPager.setOnPageChangeListener(this);
 	}
 
@@ -137,6 +154,7 @@ public class WeatherActivity extends Activity implements OnClickListener, ViewPa
 
 	/**
 	 * 初始化viewList，一组View，这些View将被添加到ViewPager中，View的个数等于待显示天气的个数
+	 * 暂时没用
 	 * @param num
 	 * @return
      */
@@ -164,6 +182,7 @@ public class WeatherActivity extends Activity implements OnClickListener, ViewPa
 
 	/**
 	 * 初始化weatherIdViewMap
+	 * 暂时没用
 	 * @return
      */
 	private Map<String, View> initMap() {
@@ -284,7 +303,7 @@ public class WeatherActivity extends Activity implements OnClickListener, ViewPa
 						public void run() {
 							Log.d(TAG, "下载天气" + response);
 							addWeatherInfo(new WeatherInfo(response));
-							showWeather();
+//							showWeather();
 //							showWeather(response);
 						}
 
@@ -310,10 +329,13 @@ public class WeatherActivity extends Activity implements OnClickListener, ViewPa
 	public void addWeatherInfo(WeatherInfo info) {
 		Log.d(TAG, "addWeatherInfo: info name is " + info.getCityName());
 		weatherIdWeatherInfoMap.put(info.getWeatherCode(), info);
+//		fragmentAdapter.notifyDataSetChanged();
+		viewPager.setAdapter(fragmentAdapter); // TODO: 2016/5/11 stupid
 	}
 
 	/**
 	 * 显示天气
+	 * 暂时没用
 	 * @param response JSON字符串
      */
 	private void showWeather(String response) {
@@ -358,6 +380,7 @@ public class WeatherActivity extends Activity implements OnClickListener, ViewPa
 
 	/**
 	 * 从所有WeatherInfo中读取天气信息，并显示到界面上。
+	 * 暂时没用
 	 */
 	private void showWeather() {
 		if (weatherIdList.size() != weatherIdWeatherInfoMap.size()) {
