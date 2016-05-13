@@ -13,5 +13,8 @@
 修复了城市名显示的问题，更换了PagerAdapter，用Fragment代替View。
 问题：header的位置问题依然没有解决。
 
+2016-05-13
+加入volly
+
 待完善
 用volly gson header的位置问题 添加关注 加号按钮

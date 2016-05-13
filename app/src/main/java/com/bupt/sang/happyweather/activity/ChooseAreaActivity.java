@@ -18,13 +18,18 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
 import com.bupt.sang.happyweather.R;
+import com.bupt.sang.happyweather.app.AppController;
 import com.bupt.sang.happyweather.db.CoolWeatherDB;
 import com.bupt.sang.happyweather.model.City;
 import com.bupt.sang.happyweather.model.County;
 import com.bupt.sang.happyweather.model.Province;
 import com.bupt.sang.happyweather.util.HttpCallbackListener;
 import com.bupt.sang.happyweather.util.HttpUtil;
+import com.bupt.sang.happyweather.util.StringUTF8Request;
 import com.bupt.sang.happyweather.util.Utility;
 
 public class ChooseAreaActivity extends Activity {
@@ -170,6 +175,7 @@ public class ChooseAreaActivity extends Activity {
 	}
 	
 	/**
+	 * 联网查询
 	 * 根据传入的代号和类型从服务器上查询省市县数据。
 	 */
 	private void queryFromServer(final String code, final String type) {
@@ -180,6 +186,43 @@ public class ChooseAreaActivity extends Activity {
 			address = "http://www.weather.com.cn/data/list3/city.xml";
 		}
 		showProgressDialog();
+		StringRequest request = new StringUTF8Request(address, new Response.Listener<String>() {
+			@Override
+			public void onResponse(String response) {
+				boolean result = false;
+				if ("province".equals(type)) {
+					result = Utility.handleProvincesResponse(coolWeatherDB,
+							response);
+				} else if ("city".equals(type)) {
+					result = Utility.handleCitiesResponse(coolWeatherDB,
+							response, selectedProvince.getId());
+				} else if ("county".equals(type)) {
+					result = Utility.handleCountiesResponse(coolWeatherDB,
+							response, selectedCity.getId());
+				}
+				if (result) {
+					// 通过runOnUiThread()方法回到主线程处理逻辑
+					closeProgressDialog();
+					if ("province".equals(type)) {
+						queryProvinces();
+					} else if ("city".equals(type)) {
+						queryCities();
+					} else if ("county".equals(type)) {
+						queryCounties();
+					}
+				}
+			}
+		}, new Response.ErrorListener() {
+			@Override
+			public void onErrorResponse(VolleyError error) {
+				closeProgressDialog();
+				Toast.makeText(ChooseAreaActivity.this,
+						"加载失败", Toast.LENGTH_SHORT).show();
+			}
+		});
+		AppController.getInstance().addToRequestQueue(request);
+
+		/*
 		HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
 			@Override
 			public void onFinish(String response) {
@@ -225,6 +268,7 @@ public class ChooseAreaActivity extends Activity {
 				});
 			}
 		});
+		*/
 	}
 	
 	/**

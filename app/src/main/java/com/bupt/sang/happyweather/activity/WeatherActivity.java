@@ -1,10 +1,15 @@
 package com.bupt.sang.happyweather.activity;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
 import com.bupt.sang.happyweather.adapter.ViewPagerAdapter;
+import com.bupt.sang.happyweather.app.AppController;
 import com.bupt.sang.happyweather.model.WeatherInfo;
 import com.bupt.sang.happyweather.util.HttpCallbackListener;
 import com.bupt.sang.happyweather.util.HttpUtil;
 import com.bupt.sang.happyweather.util.RefreshableView;
+import com.bupt.sang.happyweather.util.StringUTF8Request;
 import com.bupt.sang.happyweather.util.Utility;
 import com.bupt.sang.happyweather.R;
 
@@ -283,6 +288,35 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	 * 根据传入的地址和类型去向服务器查询天气代号或者天气信息。
 	 */
 	private void queryFromServer(final String address, final String type) {
+		StringRequest request = new StringUTF8Request(address, new Response.Listener<String>() {
+			@Override
+			public void onResponse(String response) {
+				if ("countyCode".equals(type)) {
+					if (!TextUtils.isEmpty(response)) {
+						// 从服务器返回的数据中解析出天气代号
+						String[] array = response.split("\\|");
+						if (array != null && array.length == 2) {
+							String weatherCode = array[1];
+							queryWeatherInfo(weatherCode);
+						}
+					}
+				} else if ("weatherCode".equals(type)) {
+					// 处理服务器返回的天气信息
+					Utility.handleWeatherResponse(WeatherActivity.this, response);
+						Log.d(TAG, "下载天气" + response);
+						addWeatherInfo(new WeatherInfo(response));
+//						showWeather();
+//						showWeather(response);
+					}
+				}
+			}, new Response.ErrorListener() {
+			@Override
+			public void onErrorResponse(VolleyError error) {
+				Toast.makeText(WeatherActivity.this, "同步失败", Toast.LENGTH_SHORT).show();
+			}
+		});
+		AppController.getInstance().addToRequestQueue(request);
+		/*
 		HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
 			@Override
 			public void onFinish(final String response) {
@@ -323,13 +357,13 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 				});
 			}
 		});
+		*/
 	}
 
 
 	public void addWeatherInfo(WeatherInfo info) {
 		Log.d(TAG, "addWeatherInfo: info name is " + info.getCityName());
 		weatherIdWeatherInfoMap.put(info.getWeatherCode(), info);
-//		fragmentAdapter.notifyDataSetChanged();
 		viewPager.setAdapter(fragmentAdapter); // TODO: 2016/5/11 stupid
 	}
 
@@ -436,7 +470,7 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 		if (info == null) {
 			Log.e(TAG, "onPageSelected: 无法显示天气");
 		}
-		if (cityNameTV != null) {
+		if (cityNameTV != null && info != null) {
 			cityNameTV.setText(info.getCityName());
 		}
 	}
