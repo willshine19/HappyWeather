@@ -2,6 +2,7 @@ package com.bupt.sang.happyweather.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
@@ -96,7 +97,7 @@ public class RefreshableView extends LinearLayout {
 	/**
 	 * 下拉头的View
 	 */
-	private View header;
+	public View header;
 
 	/**
 	 * 需要去下拉刷新的ListView
@@ -126,7 +127,7 @@ public class RefreshableView extends LinearLayout {
 	/**
 	 * 下拉头的布局参数
 	 */
-	private MarginLayoutParams headerLayoutParams;
+	public MarginLayoutParams headerLayoutParams;
 
 
 	/**
@@ -177,6 +178,7 @@ public class RefreshableView extends LinearLayout {
 		super(context, attrs);
 		preferences = PreferenceManager.getDefaultSharedPreferences(context);
 		header = LayoutInflater.from(context).inflate(R.layout.pull_to_refresh, null, true);
+//		header = findViewById(R.id.pull_to_refresh_head);
 		progressBar = (ProgressBar) header.findViewById(R.id.progress_bar);
 		arrow = (ImageView) header.findViewById(R.id.arrow);
 		description = (TextView) header.findViewById(R.id.description);

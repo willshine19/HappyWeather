@@ -14,7 +14,10 @@
 问题：header的位置问题依然没有解决。
 
 2016-05-13
-加入volly
+加入volly gson
+
+2016-05-14
+无法解决header的位置问题。准备新建一个分支conflict，尝试另一种方法，解决滑动冲突
 
 待完善
-用volly gson header的位置问题 添加关注 加号按钮
+header的位置问题 添加关注 加号按钮

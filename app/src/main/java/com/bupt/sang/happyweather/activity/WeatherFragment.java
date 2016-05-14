@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.bupt.sang.happyweather.R;
 
 import com.bupt.sang.happyweather.model.WeatherInfo;
+import com.bupt.sang.happyweather.util.RefreshableView;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,7 +24,6 @@ public class WeatherFragment extends Fragment {
     public static final String EXTRA_WEATHER_ID = "weatherid";
     private static final String TAG = "WeatherFragment";
 
-    private WeatherInfo weatherInfo;
     private String weatherId;
     private TextView publishTimeTv;
     private TextView currentDateTv;
@@ -49,7 +49,7 @@ public class WeatherFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.viewpager_content, parent, false);
+        RefreshableView v = (RefreshableView) inflater.inflate(R.layout.viewpager_content, parent, false);
         publishTimeTv = (TextView)v.findViewById(R.id.publish_text);
         publishTimeTv.setText("syh" + weatherId);
         currentDateTv = (TextView) v.findViewById(R.id.current_date);
@@ -61,15 +61,15 @@ public class WeatherFragment extends Fragment {
     }
 
     public void showWeather() {
-        weatherInfo = WeatherActivity.weatherIdWeatherInfoMap.get(weatherId);
+        WeatherInfo weatherInfo = WeatherActivity.weatherIdWeatherInfoMap.get(weatherId);
         if (weatherInfo == null) {
             Log.e(TAG, "showWeather: 没有天气可以显示");
             return;
         }
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月d日", Locale.CHINA);
-        publishTimeTv.setText("今天" + weatherInfo.getPublishTime() + "发布");
+        publishTimeTv.setText("今天" + weatherInfo.getPtime() + "发布");
         currentDateTv.setText(sdf.format(new Date()));
-        weatherDespTv.setText(weatherInfo.getWeatherDesp());
+        weatherDespTv.setText(weatherInfo.getWeather());
         temp1Tv.setText(weatherInfo.getTemp1());
         temp2Tv.setText(weatherInfo.getTemp2());
     }

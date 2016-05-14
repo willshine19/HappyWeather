@@ -3,15 +3,14 @@ package com.bupt.sang.happyweather.activity;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.bupt.sang.happyweather.adapter.ViewPagerAdapter;
 import com.bupt.sang.happyweather.app.AppController;
+import com.bupt.sang.happyweather.model.WeatherGson;
 import com.bupt.sang.happyweather.model.WeatherInfo;
-import com.bupt.sang.happyweather.util.HttpCallbackListener;
-import com.bupt.sang.happyweather.util.HttpUtil;
 import com.bupt.sang.happyweather.util.RefreshableView;
 import com.bupt.sang.happyweather.util.StringUTF8Request;
 import com.bupt.sang.happyweather.util.Utility;
 import com.bupt.sang.happyweather.R;
+import com.google.gson.Gson;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -273,7 +272,25 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	 */
 	private void queryWeatherCode(String countyCode) {
 		String address = "http://www.weather.com.cn/data/list3/city" + countyCode + ".xml";
-		queryFromServer(address, "countyCode");
+		StringRequest request = new StringUTF8Request(address, new Response.Listener<String>() {
+			@Override
+			public void onResponse(String response) {
+				if (!TextUtils.isEmpty(response)) {
+					// 从服务器返回的数据中解析出天气代号
+					String[] array = response.split("\\|");
+					if (array != null && array.length == 2) {
+						String weatherCode = array[1];
+						queryWeatherInfo(weatherCode);
+					}
+				}
+			}
+		}, new Response.ErrorListener() {
+			@Override
+			public void onErrorResponse(VolleyError error) {
+				Toast.makeText(WeatherActivity.this, "同步失败", Toast.LENGTH_SHORT).show();
+			}
+		});
+		AppController.getInstance().addToRequestQueue(request);
 	}
 
 	/**
@@ -281,7 +298,25 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	 */
 	private void queryWeatherInfo(String weatherCode) {
 		String address = "http://www.weather.com.cn/data/cityinfo/" + weatherCode + ".html";
-		queryFromServer(address, "weatherCode");
+		StringRequest request = new StringUTF8Request(address, new Response.Listener<String>() {
+			@Override
+			public void onResponse(String response) {
+				// 处理服务器返回的天气信息
+//				Utility.handleWeatherResponse(WeatherActivity.this, response);
+				Log.d(TAG, "下载天气" + response);
+				Gson gson = new Gson();
+				WeatherGson weatherGson = gson.fromJson(response, WeatherGson.class);
+				addWeatherInfo(weatherGson.weatherinfo);
+//				showWeather();
+//				showWeather(response);
+			}
+		}, new Response.ErrorListener() {
+			@Override
+			public void onErrorResponse(VolleyError error) {
+				Toast.makeText(WeatherActivity.this, "同步失败", Toast.LENGTH_SHORT).show();
+			}
+		});
+		AppController.getInstance().addToRequestQueue(request);
 	}
 	
 	/**
@@ -302,9 +337,11 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 					}
 				} else if ("weatherCode".equals(type)) {
 					// 处理服务器返回的天气信息
-					Utility.handleWeatherResponse(WeatherActivity.this, response);
-						Log.d(TAG, "下载天气" + response);
-						addWeatherInfo(new WeatherInfo(response));
+//					Utility.handleWeatherResponse(WeatherActivity.this, response);
+					Log.d(TAG, "下载天气" + response);
+					Gson gson = new Gson();
+					WeatherGson weatherGson = gson.fromJson(response, WeatherGson.class);
+					addWeatherInfo(weatherGson.weatherinfo);
 //						showWeather();
 //						showWeather(response);
 					}
@@ -316,54 +353,13 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 			}
 		});
 		AppController.getInstance().addToRequestQueue(request);
-		/*
-		HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
-			@Override
-			public void onFinish(final String response) {
-				if ("countyCode".equals(type)) {
-					if (!TextUtils.isEmpty(response)) {
-						// 从服务器返回的数据中解析出天气代号
-						String[] array = response.split("\\|");
-						if (array != null && array.length == 2) {
-							String weatherCode = array[1];
-							queryWeatherInfo(weatherCode);
-						}
-					}
-				} else if ("weatherCode".equals(type)) {
-					// 处理服务器返回的天气信息
-					Utility.handleWeatherResponse(WeatherActivity.this, response);
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							Log.d(TAG, "下载天气" + response);
-							addWeatherInfo(new WeatherInfo(response));
-//							showWeather();
-//							showWeather(response);
-						}
 
-					});
-				}
-			}
-			
-			@Override
-			public void onError(Exception e) {
-				e.printStackTrace();
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-//						publishText.setText("同步失败");
-						Toast.makeText(WeatherActivity.this, "同步失败", Toast.LENGTH_SHORT).show();
-					}
-				});
-			}
-		});
-		*/
 	}
 
 
 	public void addWeatherInfo(WeatherInfo info) {
-		Log.d(TAG, "addWeatherInfo: info name is " + info.getCityName());
-		weatherIdWeatherInfoMap.put(info.getWeatherCode(), info);
+		Log.d(TAG, "addWeatherInfo: info name is " + info.getCity());
+		weatherIdWeatherInfoMap.put(info.getCityid(), info);
 		viewPager.setAdapter(fragmentAdapter); // TODO: 2016/5/11 stupid
 	}
 
@@ -424,7 +420,7 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 
 		for (int i = 0; i < weatherIdList.size(); i++) {
 			WeatherInfo info = weatherIdWeatherInfoMap.get(weatherIdList.get(i));
-			RefreshableView refreshableView = (RefreshableView) weatherIdViewMap.get(info.getWeatherCode());
+			RefreshableView refreshableView = (RefreshableView) weatherIdViewMap.get(info.getCityid());
 			if (refreshableView == null) {
 				// TODO: 2016/5/9
 			}
@@ -439,12 +435,12 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 			TextView temp2Tv = (TextView) linearLayoutHorizental.getChildAt(2);
 
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月d日", Locale.CHINA);
-			publishTimeTv.setText("今天" + info.getPublishTime() + "发布");
+			publishTimeTv.setText("今天" + info.getPtime() + "发布");
 			currentDateTv.setText(sdf.format(new Date()));
-			weatherDespTv.setText(info.getWeatherDesp());
+			weatherDespTv.setText(info.getWeather());
 			temp1Tv.setText(info.getTemp1());
 			temp2Tv.setText(info.getTemp2());
-			cityNameTv.setText(info.getCityName());
+			cityNameTv.setText(info.getCity());
 		}
 
 		// TODO: 2016/5/11 前台服务
@@ -471,7 +467,7 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 			Log.e(TAG, "onPageSelected: 无法显示天气");
 		}
 		if (cityNameTV != null && info != null) {
-			cityNameTV.setText(info.getCityName());
+			cityNameTV.setText(info.getCity());
 		}
 	}
 
