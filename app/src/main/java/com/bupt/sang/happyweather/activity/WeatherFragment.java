@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bupt.sang.happyweather.R;
@@ -49,7 +50,7 @@ public class WeatherFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        RefreshableView v = (RefreshableView) inflater.inflate(R.layout.viewpager_content, parent, false);
+        View v = inflater.inflate(R.layout.viewpager_content, parent, false);
         publishTimeTv = (TextView)v.findViewById(R.id.publish_text);
         publishTimeTv.setText("syh" + weatherId);
         currentDateTv = (TextView) v.findViewById(R.id.current_date);

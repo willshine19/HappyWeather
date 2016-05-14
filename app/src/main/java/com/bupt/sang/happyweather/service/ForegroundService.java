@@ -46,16 +46,15 @@ public class ForegroundService extends Service{
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand: 开始service");
         stopForeground(true);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         Bitmap icon = BitmapFactory.decodeResource(getResources(), R.drawable.launcher);
         RemoteViews remoteViews = new RemoteViews(this.getPackageName(), R.layout.notification);
-        remoteViews.setTextViewText(R.id.notification_weather_info, prefs.getString("weather_desp", "erroro1"));
-        remoteViews.setTextViewText(R.id.notification_weather_min_temp, prefs.getString("temp1", "error2"));
-        remoteViews.setTextViewText(R.id.notification_weather_max_temp, prefs.getString("temp2", "error3"));
-        remoteViews.setTextViewText(R.id.notification_weather_city, prefs.getString("city_name", ""));
-        remoteViews.setTextViewText(R.id.notification_weather_time, "今天" + prefs.getString("publish_time", "") + "发布");
-        mWeatherCode = prefs.getString("weather_code", "");
+        remoteViews.setTextViewText(R.id.notification_weather_info, intent.getStringExtra("weather_desp"));
+        remoteViews.setTextViewText(R.id.notification_weather_min_temp, intent.getStringExtra("temp1"));
+        remoteViews.setTextViewText(R.id.notification_weather_max_temp, intent.getStringExtra("temp2"));
+        remoteViews.setTextViewText(R.id.notification_weather_city, intent.getStringExtra("city_name"));
+        remoteViews.setTextViewText(R.id.notification_weather_time, "今天" + intent.getStringExtra("publish_time") + "发布");
+        mWeatherCode = intent.getStringExtra("weather_code");
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .setContent(remoteViews)
                 .setOngoing(true)

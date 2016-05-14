@@ -37,11 +37,17 @@
             android:background="@drawable/refresh" />
     </RelativeLayout>
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/syh_viewpager"
+    <com.bupt.sang.happyweather.util.RefreshableView
+        android:id="@+id/refreshable_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+        <android.support.v4.view.ViewPager
+            android:id="@+id/syh_viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    </android.support.v4.view.ViewPager>
+        </android.support.v4.view.ViewPager>
+
+    </com.bupt.sang.happyweather.util.RefreshableView>
 
 </LinearLayout>

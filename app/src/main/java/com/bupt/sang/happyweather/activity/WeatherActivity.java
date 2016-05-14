@@ -6,6 +6,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.bupt.sang.happyweather.app.AppController;
 import com.bupt.sang.happyweather.model.WeatherGson;
 import com.bupt.sang.happyweather.model.WeatherInfo;
+import com.bupt.sang.happyweather.service.ForegroundService;
 import com.bupt.sang.happyweather.util.RefreshableView;
 import com.bupt.sang.happyweather.util.StringUTF8Request;
 import com.bupt.sang.happyweather.util.Utility;
@@ -53,8 +54,8 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	private static boolean hasShowAbout = false;
 	private static final String TAG = "[syh]WeatherActivity";
 	private ViewPager viewPager;
-//	private ViewPagerAdapter adapter;
 	private PagerAdapter fragmentAdapter;
+	private RefreshableView refreshableView;
 	/**
 	 * 一组View，将会被添加到ViewPager中
 	 */
@@ -68,6 +69,7 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	 * 切换城市按钮
 	 */
 	private Button switchCity;
+	private boolean loadOncd = false;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -127,9 +129,20 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 		switchCity = (Button) findViewById(R.id.switch_city);
 		switchCity.setOnClickListener(this);
 
+		refreshableView = (RefreshableView) findViewById(R.id.refreshable_view);
+		refreshableView.setOnRefreshListener(new RefreshableView.PullToRefreshListener() {
+			public void onRefresh() {
+				try {
+					Thread.sleep(300);
+//					refreshWeather();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				refreshableView.finishRefreshing();
+			}
+		}, 0);
+
 		viewPager = (ViewPager) findViewById(R.id.syh_viewpager);
-//		adapter = new ViewPagerAdapter(viewList, this);
-//		viewPager.setAdapter(adapter);
 		FragmentManager fm = getSupportFragmentManager();
 		fragmentAdapter = new FragmentStatePagerAdapter(fm) {
 
@@ -307,8 +320,7 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 				Gson gson = new Gson();
 				WeatherGson weatherGson = gson.fromJson(response, WeatherGson.class);
 				addWeatherInfo(weatherGson.weatherinfo);
-//				showWeather();
-//				showWeather(response);
+				showWeather();
 			}
 		}, new Response.ErrorListener() {
 			@Override
@@ -342,7 +354,7 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 					Gson gson = new Gson();
 					WeatherGson weatherGson = gson.fromJson(response, WeatherGson.class);
 					addWeatherInfo(weatherGson.weatherinfo);
-//						showWeather();
+					showWeather();
 //						showWeather(response);
 					}
 				}
@@ -360,7 +372,6 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	public void addWeatherInfo(WeatherInfo info) {
 		Log.d(TAG, "addWeatherInfo: info name is " + info.getCity());
 		weatherIdWeatherInfoMap.put(info.getCityid(), info);
-		viewPager.setAdapter(fragmentAdapter); // TODO: 2016/5/11 stupid
 	}
 
 	/**
@@ -413,48 +424,41 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	 * 暂时没用
 	 */
 	private void showWeather() {
-		if (weatherIdList.size() != weatherIdWeatherInfoMap.size()) {
-			Log.e(TAG, "showWeather 无法显示天气:weatherIdList.size() = " + weatherIdList.size() + ", weatherIdWeatherInfoMap.size() = " + weatherIdWeatherInfoMap.size());
-			return;
-		}
-
-		for (int i = 0; i < weatherIdList.size(); i++) {
-			WeatherInfo info = weatherIdWeatherInfoMap.get(weatherIdList.get(i));
-			RefreshableView refreshableView = (RefreshableView) weatherIdViewMap.get(info.getCityid());
-			if (refreshableView == null) {
-				// TODO: 2016/5/9
+		viewPager.setAdapter(fragmentAdapter); // TODO: 2016/5/11 stupid
+		if (weatherIdWeatherInfoMap.size() > 0 && !loadOncd) {
+			WeatherInfo info = weatherIdWeatherInfoMap.get(weatherIdList.get(0));
+			if (info == null) {
+				return;
 			}
-			RelativeLayout relativeLayout = (RelativeLayout) refreshableView.getChildAt(1);
-			TextView publishTimeTv = (TextView) relativeLayout.getChildAt(0);
-			LinearLayout linearLayout = (LinearLayout) relativeLayout.getChildAt(1);
-			TextView currentDateTv = (TextView) linearLayout.getChildAt(0);
-			TextView weatherDespTv = (TextView) linearLayout.getChildAt(1);
-			LinearLayout linearLayoutHorizental = (LinearLayout) linearLayout.getChildAt(2);
-			TextView cityNameTv = (TextView) linearLayout.getChildAt(3); // TODO: 2016/5/9
-			TextView temp1Tv = (TextView) linearLayoutHorizental.getChildAt(0);
-			TextView temp2Tv = (TextView) linearLayoutHorizental.getChildAt(2);
-
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月d日", Locale.CHINA);
-			publishTimeTv.setText("今天" + info.getPtime() + "发布");
-			currentDateTv.setText(sdf.format(new Date()));
-			weatherDespTv.setText(info.getWeather());
-			temp1Tv.setText(info.getTemp1());
-			temp2Tv.setText(info.getTemp2());
-			cityNameTv.setText(info.getCity());
+			startForeGoundService(info);
+			loadOncd = true;
 		}
-
-		// TODO: 2016/5/11 前台服务
+		// TODO: 2016/5/11 自动更新
 //		Intent intent = new Intent(this, AutoUpdateService.class);
 //		startService(intent);
-//		Intent foreServiceIntent = new Intent(this, ForegroundService.class);
-//		startService(foreServiceIntent);
+	}
+
+	private void startForeGoundService(final WeatherInfo info) {
+		new Thread() {
+			@Override
+			public void run() {
+				super.run();
+				Intent intent = new Intent(WeatherActivity.this, ForegroundService.class);
+				intent.putExtra("city_name", info.getCity());
+				intent.putExtra("temp1", info.getTemp1());
+				intent.putExtra("temp2", info.getTemp2());
+				intent.putExtra("weather_desp", info.getWeather());
+				intent.putExtra("publish_time", info.getPtime());
+				intent.putExtra("weather_code", info.getCityid());
+				startService(intent);
+			}
+		}.start();
 	}
 
 	private String countyId2WeatherId(String str) {
 		// TODO: 2016/5/9  讲一个县的id转为一个天气的id
 		return new String("todo");
 	}
-
 
 	@Override
 	public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
@@ -469,6 +473,8 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 		if (cityNameTV != null && info != null) {
 			cityNameTV.setText(info.getCity());
 		}
+		// TODO: 2016/5/14 会卡 
+//		startForeGoundService(info); 
 	}
 
 	@Override
