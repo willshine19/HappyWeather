@@ -79,12 +79,12 @@ public class ChooseAreaActivity extends Activity {
 		isFromWeatherActivity = getIntent().getBooleanExtra("from_weather_activity", false);
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		
-		if (prefs.getBoolean("city_selected", false) && !isFromWeatherActivity) {
-			Intent intent = new Intent(this, WeatherActivity.class);
-			startActivity(intent);
-			finish();
-			return;
-		}
+//		if (prefs.getBoolean("city_selected", false) && !isFromWeatherActivity) {
+//			Intent intent = new Intent(this, WeatherActivity.class);
+//			startActivity(intent);
+//			finish();
+//			return;
+//		}
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.choose_area);
 		listView = (ListView) findViewById(R.id.list_view);
@@ -221,54 +221,6 @@ public class ChooseAreaActivity extends Activity {
 			}
 		});
 		AppController.getInstance().addToRequestQueue(request);
-
-		/*
-		HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
-			@Override
-			public void onFinish(String response) {
-				boolean result = false;
-				if ("province".equals(type)) {
-					result = Utility.handleProvincesResponse(coolWeatherDB,
-							response);
-				} else if ("city".equals(type)) {
-					result = Utility.handleCitiesResponse(coolWeatherDB,
-							response, selectedProvince.getId());
-				} else if ("county".equals(type)) {
-					result = Utility.handleCountiesResponse(coolWeatherDB,
-							response, selectedCity.getId());
-				}
-				if (result) {
-					// 通过runOnUiThread()方法回到主线程处理逻辑
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							closeProgressDialog();
-							if ("province".equals(type)) {
-								queryProvinces();
-							} else if ("city".equals(type)) {
-								queryCities();
-							} else if ("county".equals(type)) {
-								queryCounties();
-							}
-						}
-					});
-				}
-			}
-
-			@Override
-			public void onError(Exception e) {
-				// 通过runOnUiThread()方法回到主线程处理逻辑
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						closeProgressDialog();
-						Toast.makeText(ChooseAreaActivity.this,
-										"加载失败", Toast.LENGTH_SHORT).show();
-					}
-				});
-			}
-		});
-		*/
 	}
 	
 	/**
@@ -302,10 +254,6 @@ public class ChooseAreaActivity extends Activity {
 		} else if (currentLevel == LEVEL_CITY) {
 			queryProvinces();
 		} else {
-			if (isFromWeatherActivity) {
-				Intent intent = new Intent(this, WeatherActivity.class);
-				startActivity(intent);
-			}
 			finish();
 		}
 	}

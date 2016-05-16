@@ -69,12 +69,18 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	 * 切换城市按钮
 	 */
 	private Button switchCity;
+	private Button addCity;
 	private boolean loadOncd = false;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
 		// TODO: 2016/5/9
 		super.onNewIntent(intent);
+		Log.d(TAG, "onNewIntent: start");
+		String countyCode = intent.getStringExtra("county_code");
+		if (!TextUtils.isEmpty(countyCode)) {
+			queryWeatherCode(countyCode);
+		}
 	}
 
 	@Override
@@ -128,6 +134,9 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 
 		switchCity = (Button) findViewById(R.id.switch_city);
 		switchCity.setOnClickListener(this);
+
+		addCity = (Button) findViewById(R.id.add_city);
+		addCity.setOnClickListener(this);
 
 		refreshableView = (RefreshableView) findViewById(R.id.refreshable_view);
 		refreshableView.setOnRefreshListener(new RefreshableView.PullToRefreshListener() {
@@ -219,8 +228,10 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 			startActivity(intent);
 			finish();
 			break;
-		case R.id.refresh_weather:
-			refreshWeather();
+		case R.id.add_city:
+			Intent intent2 = new Intent(this, ChooseAreaActivity.class);
+			intent2.putExtra("from_weather_activity", true);
+			startActivity(intent2);
 			break;
 		default:
 			break;
@@ -293,6 +304,9 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 					String[] array = response.split("\\|");
 					if (array != null && array.length == 2) {
 						String weatherCode = array[1];
+						if (!weatherIdList.contains(weatherCode)) {
+							weatherIdList.add(weatherCode);
+						}
 						queryWeatherInfo(weatherCode);
 					}
 				}
@@ -370,8 +384,13 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 
 
 	public void addWeatherInfo(WeatherInfo info) {
-		Log.d(TAG, "addWeatherInfo: info name is " + info.getCity());
-		weatherIdWeatherInfoMap.put(info.getCityid(), info);
+		if (weatherIdList.contains(info.getCityid())) {
+			weatherIdWeatherInfoMap.put(info.getCityid(), info);
+			Log.d(TAG, "addWeatherInfo: info name is " + info.getCity());
+			Log.d(TAG, "addWeatherInfo: map大小" + weatherIdWeatherInfoMap.size() + " list大小" + weatherIdList.size());
+		} else {
+			Log.d(TAG, "addWeatherInfo: weatherIdList中没有这个天气" + info.getCity());
+		}
 	}
 
 	/**
@@ -425,6 +444,7 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	 */
 	private void showWeather() {
 		viewPager.setAdapter(fragmentAdapter); // TODO: 2016/5/11 stupid
+		// 第一次showWeather时打开一个前台服务
 		if (weatherIdWeatherInfoMap.size() > 0 && !loadOncd) {
 			WeatherInfo info = weatherIdWeatherInfoMap.get(weatherIdList.get(0));
 			if (info == null) {

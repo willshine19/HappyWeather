@@ -28,13 +28,13 @@
             android:textSize="24sp" />
 
         <Button
-            android:id="@+id/refresh_weather"
+            android:id="@+id/add_city"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="10dp"
-            android:background="@drawable/refresh" />
+            android:background="@android:drawable/ic_input_add" />
     </RelativeLayout>
 
     <com.bupt.sang.happyweather.util.RefreshableView

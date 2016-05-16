@@ -44,6 +44,9 @@ public class WeatherInfo {
         }
     }
 
+    /**
+     * 返回城市名字
+     */
     public String getCity() {
         return city;
     }
@@ -66,6 +69,9 @@ public class WeatherInfo {
         return temp2;
     }
 
+    /**
+     * 返回天气id
+     */
     public String getCityid() {
 
         return cityid;
