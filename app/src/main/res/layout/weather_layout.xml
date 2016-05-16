@@ -1,53 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/weather"
-    >
+    tools:context=".activity.WeatherActivity">
 
-    <RelativeLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="#484E61" >
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@drawable/weather"
+        >
 
-        <Button
-            android:id="@+id/switch_city"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="10dp"
-            android:background="@drawable/home" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#484E61" >
 
-        <TextView
-            android:id="@+id/city_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:textColor="#fff"
-            android:textSize="24sp" />
+            <Button
+                android:id="@+id/switch_city"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/home" />
 
-        <Button
-            android:id="@+id/add_city"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="10dp"
-            android:background="@android:drawable/ic_input_add" />
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/city_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:textColor="#fff"
+                android:textSize="24sp" />
 
-    <com.bupt.sang.happyweather.util.RefreshableView
-        android:id="@+id/refreshable_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <android.support.v4.view.ViewPager
-            android:id="@+id/syh_viewpager"
+            <Button
+                android:id="@+id/add_city"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="10dp"
+                android:background="@android:drawable/ic_menu_add" />
+        </RelativeLayout>
+
+        <com.bupt.sang.happyweather.util.RefreshableView
+            android:id="@+id/refreshable_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+            <android.support.v4.view.ViewPager
+                android:id="@+id/syh_viewpager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-        </android.support.v4.view.ViewPager>
+            </android.support.v4.view.ViewPager>
 
-    </com.bupt.sang.happyweather.util.RefreshableView>
+        </com.bupt.sang.happyweather.util.RefreshableView>
 
-</LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="280dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/side_nav_bar"
+        android:layout_gravity="start"
+        android:gravity="bottom"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="16dp"
+            android:src="@android:drawable/sym_def_app_icon" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="16dp"
+            android:text="桑 耀辉"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginLeft="16dp"
+            android:text="sangyaohui19@163.com" />
+
+        <ListView
+            android:id="@+id/left_drawer"
+            android:choiceMode="singleChoice"
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#ffffff"
+            />
+    </LinearLayout>
+
+</android.support.v4.widget.DrawerLayout>
