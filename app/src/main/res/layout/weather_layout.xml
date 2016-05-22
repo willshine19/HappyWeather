@@ -34,6 +34,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:textColor="#fff"
+                android:text="暂无数据"
                 android:textSize="24sp" />
 
             <Button
@@ -45,6 +46,14 @@
                 android:layout_marginRight="10dp"
                 android:background="@android:drawable/ic_menu_add" />
         </RelativeLayout>
+        
+        <!--<android.support.v7.widget.Toolbar-->
+            <!--android:id="@+id/toolbar"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="?attr/actionBarSize"-->
+            <!--android:background="?attr/colorPrimary"-->
+            <!--app:titleTextColor="#ffffff"-->
+            <!--app:popupTheme="@style/AppTheme.PopupOverlay" />-->
 
         <com.bupt.sang.happyweather.util.RefreshableView
             android:id="@+id/refreshable_view"

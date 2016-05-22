@@ -18,16 +18,20 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -37,12 +41,13 @@ import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class WeatherActivity extends FragmentActivity implements OnClickListener, ViewPager.OnPageChangeListener{
+public class WeatherActivity extends AppCompatActivity implements OnClickListener, ViewPager.OnPageChangeListener{
 
 	private static boolean hasShowAbout = false;
 	private static final String TAG = "[syh]WeatherActivity";
@@ -63,6 +68,9 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	private DrawerLayout mDrawerLayout;
 	private boolean loadOncd = false;
 	private BaseAdapter mListAdapter;
+	private Toolbar toolbar;
+
+	private SharedPreferences preferences;
 
 
 	@Override
@@ -74,7 +82,7 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 //		weatherIdViewMap = initMap();
 //		viewList = initList(weatherIdList.size());
 
-		initWeatherIdList();
+//		initWeatherIdList();
 		initViews();
 		loadWeather();
 
@@ -96,18 +104,15 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	}
 
 
-	/**
-	 * 天气列表中默认有北上广三个城市的天气id
-	 */
-	private void initWeatherIdList() {
-		weatherIdList.add("101010100"); // 北京
-		weatherIdList.add("101020100"); // 上海
-		weatherIdList.add("101280101"); // 广州
-	}
-
 	private void initViews() {
+		preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		int weatherNum = preferences.getInt("weather_num", 0);
+		for (int i = 0; i < weatherNum; i++) {
+			String weatherId = preferences.getString("weather" + i, null);
+			if (weatherId != null) weatherIdList.add(weatherId);
+		}
+
 		cityNameTV = (TextView) findViewById(R.id.city_name);
-		cityNameTV.setText("北京"); // TODO: 2016/5/11
 
 		findViewById(R.id.switch_city).setOnClickListener(this);;
 		findViewById(R.id.add_city).setOnClickListener(this);
@@ -117,7 +122,7 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 			public void onRefresh() {
 				try {
 					Thread.sleep(300);
-//					refreshWeather();
+					refreshWeather();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -143,18 +148,76 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 		mViewPager.setOnPageChangeListener(this);
 
 		mDrawList = (ListView) findViewById(R.id.left_drawer);
-		mListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1, cityNameList);
-		mDrawList.setAdapter(mListAdapter);
-		mDrawList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+		mListAdapter = new BaseAdapter() {
+			@Override
+			public int getCount() {
+				return cityNameList.size();
+			}
 
 			@Override
-			public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-				mViewPager.setCurrentItem(position);
-				mDrawerLayout.closeDrawer(GravityCompat.START);
+			public Object getItem(int i) {
+				return cityNameList.get(i);
 			}
-		});
+
+			@Override
+			public long getItemId(int i) {
+				return i;
+			}
+
+			@Override
+			public View getView(final int i, View view, ViewGroup viewGroup) {
+				LayoutInflater inflater = LayoutInflater.from(WeatherActivity.this);
+				view = inflater.inflate(R.layout.list_item, viewGroup, false);
+				TextView tv = (TextView) view.findViewById(R.id.list_item_city_name);
+				tv.setText(cityNameList.get(i));
+				view.findViewById(R.id.list_item_delete).setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View view) {
+						removeWeather(i);
+					}
+				});
+				tv.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View view) {
+							mViewPager.setCurrentItem(i);
+							mDrawerLayout.closeDrawer(GravityCompat.START);
+					}
+				});
+				return view;
+			}
+		};
+//		mListAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, cityNameList);
+		mDrawList.setAdapter(mListAdapter);
+
 
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+//		toolbar = (Toolbar) findViewById(R.id.toolbar);
+////		setSupportActionBar(toolbar);
+//		toolbar.setTitle("北京");
+//
+//		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, R.string.open, R.string.close);
+//		mDrawerLayout.setDrawerListener(toggle);
+//		toggle.syncState();
+	}
+
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putInt("weather_num", weatherIdList.size());
+		for (int i = 0; i < weatherIdList.size(); i++) {
+			editor.putString("weather" + i, weatherIdList.get(i));
+		}
+		editor.commit();
+	}
+
+	private void removeWeather(int i) {
+		weatherIdWeatherInfoMap.remove(weatherIdList.get(i));
+		weatherIdList.remove(i);
+		showWeather();
 	}
 
 
@@ -162,11 +225,15 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	 * 开始加载所有天气
 	 */
 	private void loadWeather() {
-		for (String weatherId : weatherIdList) {
-			queryWeatherInfo(weatherId);
+		if (weatherIdList.size() == 0) {
+			queryWeatherInfo("101010100"); // 北京
+			queryWeatherInfo("101020100"); // 上海
+			queryWeatherInfo("101280101"); // 广州
+		} else {
+			refreshWeather();
 		}
 	}
-	
+
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
@@ -185,14 +252,12 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 		}
 	}
 
-	// 更新天气
+	/**
+	 * 更新天气
+	 */
 	private void refreshWeather() {
-		// TODO: 2016/5/11
-//		publishText.setText("同步中...");
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		String weatherCode = prefs.getString("weather_code", "");
-		if (!TextUtils.isEmpty(weatherCode)) {
-			queryWeatherInfo(weatherCode);
+		for (String each : weatherIdList) {
+			queryWeatherInfo(each);
 		}
 	}
 
@@ -241,7 +306,7 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	/**
 	 * 查询县级代号所对应的天气代号。
 	 */
-	private void queryWeatherCode(String countyCode) {
+	private void queryWeatherCode(final String countyCode) {
 		String address = "http://www.weather.com.cn/data/list3/city" + countyCode + ".xml";
 		StringRequest request = new StringUTF8Request(address, new Response.Listener<String>() {
 			@Override
@@ -258,7 +323,8 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 		}, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError error) {
-				Toast.makeText(WeatherActivity.this, "同步失败", Toast.LENGTH_SHORT).show();
+				Toast.makeText(WeatherActivity.this, "加载失败", Toast.LENGTH_SHORT).show();
+				Log.e(TAG, "queryWeatherCode: 加载失败 城市代码: " + countyCode);
 			}
 		});
 		AppController.getInstance().addToRequestQueue(request);
@@ -267,7 +333,7 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	/**
 	 * 查询天气代号所对应的天气。
 	 */
-	private void queryWeatherInfo(String weatherCode) {
+	private void queryWeatherInfo(final String weatherCode) {
 		String address = "http://www.weather.com.cn/data/cityinfo/" + weatherCode + ".html";
 		StringRequest request = new StringUTF8Request(address, new Response.Listener<String>() {
 			@Override
@@ -283,13 +349,14 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 		}, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError error) {
-				Toast.makeText(WeatherActivity.this, "同步失败", Toast.LENGTH_SHORT).show();
+				Toast.makeText(WeatherActivity.this, "加载失败", Toast.LENGTH_SHORT).show();
+				Log.e(TAG, "queryWeatherInfo: 加载失败 天气代码: " + weatherCode );
 			}
 		});
 		AppController.getInstance().addToRequestQueue(request);
 	}
 	
-	public void addWeatherInfo(WeatherInfo info) {
+	private void addWeatherInfo(WeatherInfo info) {
 		if (info == null || TextUtils.isEmpty(info.getCityid())) {
 			Log.e(TAG, "addWeatherInfo: 失败");
 			return;
@@ -297,11 +364,15 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 		if (!weatherIdList.contains(info.getCityid())) {
 			weatherIdList.add(info.getCityid());
 		}
-		weatherIdWeatherInfoMap.put(info.getCityid(), info);
+		if (!weatherIdWeatherInfoMap.containsKey(info.getCityid())) {
+			weatherIdWeatherInfoMap.put(info.getCityid(), info);
+		}
 		if (weatherIdList.size() == weatherIdWeatherInfoMap.size()) {
 			Log.d(TAG, "addWeatherInfo: size = " + weatherIdList.size());
 		} else {
 			Log.e(TAG, "addWeatherInfo: size不等");
+			Log.e(TAG, "addWeatherInfo: map" + weatherIdWeatherInfoMap.keySet());
+			Log.e(TAG, "addWeatherInfo: list" + weatherIdList);
 		}
 	}
 
@@ -313,7 +384,9 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	private void showWeather() {
 
 		updateListAdapter();
+		int temp = mViewPager.getCurrentItem();
 		mViewPager.setAdapter(fragmentAdapter); // TODO: 2016/5/11 stupid
+		mViewPager.setCurrentItem(temp);
 		// 第一次showWeather时打开一个前台服务
 		if (weatherIdWeatherInfoMap.size() > 0 && !loadOncd) {
 			WeatherInfo info = weatherIdWeatherInfoMap.get(weatherIdList.get(0));
@@ -322,6 +395,11 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 			}
 			startForeGoundService(info);
 			loadOncd = true;
+		}
+		if (cityNameList.size() > 0) {
+			cityNameTV.setText(cityNameList.get(mViewPager.getCurrentItem()));
+		} else {
+			cityNameTV.setText("请添加天气");
 		}
 		// TODO: 2016/5/11 自动更新
 //		Intent intent = new Intent(this, AutoUpdateService.class);
@@ -334,6 +412,8 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 			WeatherInfo info = weatherIdWeatherInfoMap.get(weatherIdList.get(i));
 			if (info != null) {
 				cityNameList.add(info.getCity());
+			} else {
+				cityNameList.add(weatherIdList.get(i));
 			}
 		}
 		mListAdapter.notifyDataSetChanged();
@@ -368,12 +448,16 @@ public class WeatherActivity extends FragmentActivity implements OnClickListener
 	public void onPageSelected(int position) {
 		String weatherId = weatherIdList.get(mViewPager.getCurrentItem());
 		WeatherInfo info = weatherIdWeatherInfoMap.get(weatherId);
+		if (cityNameTV == null) {
+			return;
+		}
 		if (info == null) {
 			Log.e(TAG, "onPageSelected: 无法显示天气");
-		}
-		if (cityNameTV != null && info != null) {
+			cityNameTV.setText(weatherIdList.get(position));
+		} else {
 			cityNameTV.setText(info.getCity());
 		}
+//		toolbar.setTitle(info.getCity());
 		// TODO: 2016/5/14 会卡 
 //		startForeGoundService(info); 
 	}

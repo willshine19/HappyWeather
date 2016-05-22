@@ -25,5 +25,10 @@
 
 2016-05-16
 实现添加天气的功能,DrawerLayout侧滑菜单,可关注城市天气
+加了toolbar，但是setSupportActionBar方法报错，不能加加天气的按钮
+
+2016-05-17
+去掉toolbar。提供鲁棒性，网络异常也可以正常显示。添加了删除天气的功能
 
 待完善
+ RecyclerView 

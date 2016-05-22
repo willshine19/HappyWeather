@@ -195,109 +195,16 @@ public class RefreshableView extends LinearLayout {
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
 		super.onLayout(changed, l, t, r, b);
 		if (changed && !loadOnce) {
-			Log.d(TAG, "[0]onLayout: header.getHeight() = " + header.getHeight());
 			hideHeaderHeight = -header.getHeight();
 			headerLayoutParams = (MarginLayoutParams) header.getLayoutParams();
-			Log.d(TAG, "[1]onLayout: headerLayoutParams.topMargin = " + headerLayoutParams.topMargin);
 			headerLayoutParams.topMargin = hideHeaderHeight; // 负数
-			Log.d(TAG, "[2]onLayout: headerLayoutParams.topMargin = " + headerLayoutParams.topMargin);
 			body = getChildAt(1);
-//			body.setOnTouchListener(listner);
 			loadOnce = true;
 		}
 	}
 
-	private OnTouchListener listner = new OnTouchListener() {
-		
-		/**
-		 * 当ListView被触摸时调用，其中处理了各种下拉刷新的具体逻辑。
-		 */
-		public boolean onTouch(View v, MotionEvent event) {
-			setIsAbleToPull(event);
-			if (ableToPull) {
-				switch (event.getAction()) {
-				case MotionEvent.ACTION_DOWN:
-					yDown = event.getRawY();
-					break;
-				case MotionEvent.ACTION_MOVE:
-//					Log.d(TAG, "[1.0]onTouch: ACTION_MOVE");
-					float yMove = event.getRawY();
-					int distance = (int) (yMove - yDown);
-//					Log.d(TAG, "[1.1] onTouch: distance = " + distance);
-					// 如果手指是下滑状态，并且下拉头是完全隐藏的，就屏蔽下拉事件
-					if (distance <= 0 && headerLayoutParams.topMargin <= hideHeaderHeight) {
-//						Log.d(TAG, "[-]手指向上滑动");
-						return false;
-					}
-					if (distance < touchSlop) {
-//						Log.d(TAG, "[-]滑动距离过小");
-						return false;
-					}
-//					Log.d(TAG, "[1.2] onTouch: currentStatus = " + currentStatus);
-					if (currentStatus != STATUS_REFRESHING) {
-						if (headerLayoutParams.topMargin > 0) {
-							currentStatus = STATUS_RELEASE_TO_REFRESH;
-						} else {
-							currentStatus = STATUS_PULL_TO_REFRESH;
-						}
-						// 通过偏移下拉头的topMargin值，来实现下拉效果
-//						Log.d(TAG, "[1.3] onTouch: headerLayoutParams.topMargin = " + headerLayoutParams.topMargin);
-						headerLayoutParams.topMargin = (distance / 2) + hideHeaderHeight;
-						header.setLayoutParams(headerLayoutParams);
-//						Log.d(TAG, "[1.4] onTouch: headerLayoutParams.topMargin = " + headerLayoutParams.topMargin);
-					}
-					break;
-				case MotionEvent.ACTION_UP:
-//					Log.d(TAG, "[1.0]onTouch: ACTION_UP");
-				default:
-					if (currentStatus == STATUS_RELEASE_TO_REFRESH) {
-						// 松手时如果是释放立即刷新状态，就去调用正在刷新的任务
-						new RefreshingTask().execute();
-					} else if (currentStatus == STATUS_PULL_TO_REFRESH) {
-						// 松手时如果是下拉状态，就去调用隐藏下拉头的任务
-						new HideHeaderTask().execute();
-					}
-					break;
-				}
-				// 时刻记得更新下拉头中的信息
-//				Log.d(TAG, "[2] onTouch: currentStatus = " + currentStatus);
-				if (currentStatus == STATUS_PULL_TO_REFRESH
-						|| currentStatus == STATUS_RELEASE_TO_REFRESH) {
-					updateHeaderView();
-					// 当前正处于下拉或释放状态，要让ListView失去焦点，否则被点击的那一项会一直处于选中状态
-					body.setPressed(false);
-					body.setFocusable(false);
-					body.setFocusableInTouchMode(false);
-					lastStatus = currentStatus;
-					// 当前正处于下拉或释放状态，通过返回true屏蔽掉ListView的滚动事件
-					return true;
-				}
-			}
-//			Log.d(TAG, "[3] onTouch: return false");
-//			return false;
-			return true;
-		}
-		
-		/**
-		 * 根据当前ListView的滚动状态来设定
-		 * 的值，每次都需要在onTouch中第一个执行，这样可以判断出当前应该是滚动ListView，还是应该进行下拉。
-		 */
-		private void setIsAbleToPull(MotionEvent event) {
-			if (body.getTop() >= 0) {
-				if (!ableToPull) {
-					yDown = event.getRawY();
-				}
-				ableToPull = true;
-			} else {
-				ableToPull = false;
-			}
-		}
-	};
-	
-
 	/**
 	 * 给下拉刷新控件注册一个监听器。
-	 * 
 	 * @param listener 监听器的实现。
 	 * @param id 为了防止不同界面的下拉刷新在上次更新时间上互相有冲突， 请不同界面在注册下拉刷新监听器时一定要传入不同的id。
 	 */
@@ -506,7 +413,6 @@ public class RefreshableView extends LinearLayout {
 
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
-//        return super.onInterceptTouchEvent(ev);
 		if (!isTestCompete) {
 			getEventType(ev);
 			return false;
@@ -561,67 +467,60 @@ public class RefreshableView extends LinearLayout {
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		setIsAbleToPull(event);
-		if (ableToPull) {
-			switch (event.getAction()) {
-				case MotionEvent.ACTION_DOWN:
-					yDown = event.getRawY();
-					break;
-				case MotionEvent.ACTION_MOVE:
-//					Log.d(TAG, "[1.0]onTouch: ACTION_MOVE");
-					float yMove = event.getRawY();
-					int distance = (int) (yMove - yDown);
-//					Log.d(TAG, "[1.1] onTouch: distance = " + distance);
-					// 如果手指是下滑状态，并且下拉头是完全隐藏的，就屏蔽下拉事件
-					if (distance <= 0 && headerLayoutParams.topMargin <= hideHeaderHeight) {
-//						Log.d(TAG, "[-]手指向上滑动");
-						return false;
-					}
-					if (distance < touchSlop) {
-//						Log.d(TAG, "[-]滑动距离过小");
-						return false;
-					}
-//					Log.d(TAG, "[1.2] onTouch: currentStatus = " + currentStatus);
-					if (currentStatus != STATUS_REFRESHING) {
-						if (headerLayoutParams.topMargin > 0) {
-							currentStatus = STATUS_RELEASE_TO_REFRESH;
-						} else {
-							currentStatus = STATUS_PULL_TO_REFRESH;
-						}
-						// 通过偏移下拉头的topMargin值，来实现下拉效果
-//						Log.d(TAG, "[1.3] onTouch: headerLayoutParams.topMargin = " + headerLayoutParams.topMargin);
-						headerLayoutParams.topMargin = (distance / 2) + hideHeaderHeight;
-						header.setLayoutParams(headerLayoutParams);
-//						Log.d(TAG, "[1.4] onTouch: headerLayoutParams.topMargin = " + headerLayoutParams.topMargin);
-					}
-					break;
-				case MotionEvent.ACTION_UP:
-//					Log.d(TAG, "[1.0]onTouch: ACTION_UP");
-				default:
-					if (currentStatus == STATUS_RELEASE_TO_REFRESH) {
-						// 松手时如果是释放立即刷新状态，就去调用正在刷新的任务
-						new RefreshingTask().execute();
-					} else if (currentStatus == STATUS_PULL_TO_REFRESH) {
-						// 松手时如果是下拉状态，就去调用隐藏下拉头的任务
-						new HideHeaderTask().execute();
-					}
-					break;
-			}
-			// 时刻记得更新下拉头中的信息
-//				Log.d(TAG, "[2] onTouch: currentStatus = " + currentStatus);
-			if (currentStatus == STATUS_PULL_TO_REFRESH
-					|| currentStatus == STATUS_RELEASE_TO_REFRESH) {
-				updateHeaderView();
-				// 当前正处于下拉或释放状态，要让ListView失去焦点，否则被点击的那一项会一直处于选中状态
-				body.setPressed(false);
-				body.setFocusable(false);
-				body.setFocusableInTouchMode(false);
-				lastStatus = currentStatus;
-				// 当前正处于下拉或释放状态，通过返回true屏蔽掉ListView的滚动事件
-				return true;
-			}
+		if (!ableToPull) { // 不能下拉
+			return true;
 		}
-//			Log.d(TAG, "[3] onTouch: return false");
-//			return false;
+		switch (event.getAction()) {
+			case MotionEvent.ACTION_DOWN:
+				yDown = event.getRawY(); // 记录下手指按下的y坐标
+				break;
+			case MotionEvent.ACTION_MOVE:
+				float yMove = event.getRawY();
+				int distance = (int) (yMove - yDown);
+				// 如果手指是下滑状态，并且下拉头是完全隐藏的，就屏蔽下拉事件
+				if (distance <= 0 && headerLayoutParams.topMargin <= hideHeaderHeight) {
+//						Log.d(TAG, "[-]手指向上滑动");
+					return false;
+				}
+				if (distance < touchSlop) {
+//						Log.d(TAG, "[-]滑动距离过小");
+					return false;
+				}
+				if (currentStatus != STATUS_REFRESHING) {
+					if (headerLayoutParams.topMargin > 0) {
+						currentStatus = STATUS_RELEASE_TO_REFRESH;
+					} else {
+						currentStatus = STATUS_PULL_TO_REFRESH;
+					}
+					// 通过偏移下拉头的topMargin值，来实现下拉效果
+					headerLayoutParams.topMargin = (distance / 2) + hideHeaderHeight;
+					header.setLayoutParams(headerLayoutParams);
+				}
+				break;
+			case MotionEvent.ACTION_UP:
+			default:
+				if (currentStatus == STATUS_RELEASE_TO_REFRESH) {
+					// 松手时如果是释放立即刷新状态，就去调用正在刷新的任务
+					new RefreshingTask().execute();
+				} else if (currentStatus == STATUS_PULL_TO_REFRESH) {
+					// 松手时如果是下拉状态，就去调用隐藏下拉头的任务
+					new HideHeaderTask().execute();
+				}
+				break;
+		}
+
+		// 时刻记得更新下拉头中的信息
+		if (currentStatus == STATUS_PULL_TO_REFRESH
+				|| currentStatus == STATUS_RELEASE_TO_REFRESH) {
+			updateHeaderView();
+			// 当前正处于下拉或释放状态，要让ListView失去焦点，否则被点击的那一项会一直处于选中状态
+			body.setPressed(false);
+			body.setFocusable(false);
+			body.setFocusableInTouchMode(false);
+			lastStatus = currentStatus;
+			// 当前正处于下拉或释放状态，通过返回true屏蔽掉ListView的滚动事件
+			return true;
+		}
 		return true;
 	}
 	/**
