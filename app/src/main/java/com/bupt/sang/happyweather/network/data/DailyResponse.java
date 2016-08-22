@@ -6,26 +6,26 @@ import java.util.List;
  * Created by sangyaohui on 16/8/21.
  */
 public final class DailyResponse {
-    List<Result> results;
+    public List<Result> results;
 
     public class Result {
-        Location location;
-        List<Daily> daily;
+        public Location location;
+        public List<Daily> daily;
     }
 
     public class Daily {
-        String data;
-        String text_day;
-        String code_day;
-        String text_night;
-        String code_nigth;
-        String high;
-        String low;
-        String precip;
-        String wind_direction;
-        String wind_direction_degree;
-        String wind_speed;
-        String wind_scale;
+        public String data;
+        public String text_day;
+        public String code_day;
+        public String text_night;
+        public String code_nigth;
+        public String high;
+        public String low;
+        public String precip;
+        public String wind_direction;
+        public String wind_direction_degree;
+        public String wind_speed;
+        public String wind_scale;
     }
 }
 

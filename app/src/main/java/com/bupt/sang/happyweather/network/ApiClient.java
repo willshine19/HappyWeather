@@ -33,7 +33,7 @@ public class ApiClient {
         return networkApi.getWeather(Constants.KEY, location, Constants.LANGUAGE, Constants.UNIT_TEMPRATURE);
     }
 
-    public Call<DailyResponse> getDaily(@Query("key") String key, @Query("location") String location, @Query("languaage") String language, @Query("unit") String unit, @Query("shart") int start, @Query("days") int days) {
+    public Call<DailyResponse> getDaily(String location) {
         return networkApi.getDaily(Constants.KEY, location, Constants.LANGUAGE, Constants.UNIT_TEMPRATURE, 0, 5);
     }
 }

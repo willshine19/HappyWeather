@@ -55,18 +55,20 @@
             <!--app:titleTextColor="#ffffff"-->
             <!--app:popupTheme="@style/AppTheme.PopupOverlay" />-->
 
-        <com.bupt.sang.happyweather.util.RefreshableView
-            android:id="@+id/refreshable_view"
+        <!--<com.bupt.sang.happyweather.util.RefreshableView-->
+            <!--android:id="@+id/refreshable_view"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent">-->
+            <!--<android.support.v4.view.ViewPager-->
+                <!--android:id="@+id/syh_viewpager"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"/>-->
+
+        <!--</com.bupt.sang.happyweather.util.RefreshableView>-->
+        <android.support.v4.view.ViewPager
+            android:id="@+id/syh_viewpager"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <android.support.v4.view.ViewPager
-                android:id="@+id/syh_viewpager"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-            </android.support.v4.view.ViewPager>
-
-        </com.bupt.sang.happyweather.util.RefreshableView>
+            android:layout_height="match_parent"/>
 
     </LinearLayout>
 

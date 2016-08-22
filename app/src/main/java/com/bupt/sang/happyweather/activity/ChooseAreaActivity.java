@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -34,6 +35,8 @@ import com.bupt.sang.happyweather.util.Utility;
 
 public class ChooseAreaActivity extends Activity {
 
+	private static final String TAG = "ChooseAreaActivity";
+
 	public static final int LEVEL_PROVINCE = 0;
 	public static final int LEVEL_CITY = 1;
 	public static final int LEVEL_COUNTY = 2;
@@ -43,7 +46,8 @@ public class ChooseAreaActivity extends Activity {
 	private ListView listView;
 	private ArrayAdapter<String> adapter;
 	private CoolWeatherDB coolWeatherDB;
-	private List<String> dataList = new ArrayList<String>();
+	// adapter中的数据
+	private List<String> dataList = new ArrayList<>();
 	/**
 	 * 省列表
 	 */
@@ -89,7 +93,7 @@ public class ChooseAreaActivity extends Activity {
 		setContentView(R.layout.choose_area);
 		listView = (ListView) findViewById(R.id.list_view);
 		titleText = (TextView) findViewById(R.id.title_text);
-		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, dataList);
+		adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, dataList);
 		listView.setAdapter(adapter);
 		coolWeatherDB = CoolWeatherDB.getInstance(this);
 		listView.setOnItemClickListener(new OnItemClickListener() {
@@ -101,7 +105,13 @@ public class ChooseAreaActivity extends Activity {
 					queryCities();
 				} else if (currentLevel == LEVEL_CITY) {
 					selectedCity = cityList.get(index);
-					queryCounties();
+					String cityName = cityList.get(index).getCityName();
+					Log.d(TAG, "select city:" + cityName);
+					Intent intent = new Intent(ChooseAreaActivity.this, WeatherActivity.class);
+					intent.putExtra("city_name", cityName);
+					startActivity(intent);
+					finish();
+//					queryCounties();
 				} else if (currentLevel == LEVEL_COUNTY) {
 					String countyCode = countyList.get(index).getCountyCode();
 					Intent intent = new Intent(ChooseAreaActivity.this, WeatherActivity.class);

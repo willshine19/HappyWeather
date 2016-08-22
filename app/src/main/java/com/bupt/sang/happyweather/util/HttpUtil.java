@@ -12,6 +12,12 @@ public class HttpUtil {
 
 	private static final String TAG = "HttpUtil";
 
+
+	/**
+	 * 异步 GET http
+	 * @param address
+	 * @param listener
+     */
 	public static void sendHttpRequest(final String address,
 									   final HttpCallbackListener listener) {
 		new Thread(new Runnable() {

@@ -29,6 +29,7 @@
             android:id="@+id/current_date"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
+            android:text="2016-1-1"
             android:gravity="center"
             android:textColor="#FFF"
             android:textSize="18sp" />
@@ -37,6 +38,7 @@
             android:id="@+id/weather_desp"
             android:layout_width="wrap_content"
             android:layout_height="30dp"
+            android:text="晴"
             android:gravity="center"
             android:textColor="#FFF"
             android:textSize="25sp" />
@@ -48,10 +50,11 @@
             android:orientation="horizontal" >
 
             <TextView
-                android:id="@+id/temp1"
+                android:id="@+id/temp_low"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
+                android:text="10"
                 android:textColor="#FFF"
                 android:textSize="60sp" />
 
@@ -66,10 +69,11 @@
                 android:textSize="40sp" />
 
             <TextView
-                android:id="@+id/temp2"
+                android:id="@+id/temp_high"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
+                android:text="20"
                 android:textColor="#FFF"
                 android:textSize="60sp" />
         </LinearLayout>

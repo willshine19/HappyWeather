@@ -1,10 +1,13 @@
 package com.bupt.sang.happyweather.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.widget.Toast;
 
+import com.bupt.sang.happyweather.model.WeatherInfo;
 import com.bupt.sang.happyweather.network.ApiClient;
 import com.bupt.sang.happyweather.network.data.NowResponse;
+import com.bupt.sang.happyweather.service.ForegroundService;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -32,5 +35,22 @@ public class WeatherPresenter {
 
             }
         });
+    }
+
+    public void startForeGoundService(final WeatherInfo info) {
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                Intent intent = new Intent(activity, ForegroundService.class);
+                intent.putExtra("city_name", info.getCity());
+                intent.putExtra("temp1", info.getTemp1());
+                intent.putExtra("temp2", info.getTemp2());
+                intent.putExtra("weather_desp", info.getWeather());
+                intent.putExtra("publish_time", info.getPtime());
+                intent.putExtra("weather_code", info.getCityid());
+                activity.startService(intent);
+            }
+        }.start();
     }
 }

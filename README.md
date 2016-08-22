@@ -31,4 +31,8 @@
 去掉toolbar。提供鲁棒性，网络异常也可以正常显示。添加了删除天气的功能
 
 待完善
- RecyclerView 
+ RecyclerView
+
+2016 8 21
+准备换知心天气的api，加入Retrofit，下一步重新组织数据
+问题：下载天气如果更新到ui比较好

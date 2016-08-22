@@ -24,7 +24,7 @@ public class CoolWeatherDB {
 	 */
 	public static final int VERSION = 1;
 
-	private static CoolWeatherDB coolWeatherDB;
+	private static CoolWeatherDB sInstance;
 
 	private SQLiteDatabase db;
 
@@ -41,10 +41,10 @@ public class CoolWeatherDB {
 	 * 获取CoolWeatherDB的实例。
 	 */
 	public synchronized static CoolWeatherDB getInstance(Context context) {
-		if (coolWeatherDB == null) {
-			coolWeatherDB = new CoolWeatherDB(context);
+		if (sInstance == null) {
+			sInstance = new CoolWeatherDB(context);
 		}
-		return coolWeatherDB;
+		return sInstance;
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class CoolWeatherDB {
 	 * 返回一个省份列表
 	 */
 	public List<Province> loadProvinces() {
-		List<Province> list = new ArrayList<Province>();
+		List<Province> list = new ArrayList<>();
 		Cursor cursor = db
 				.query("Province", null, null, null, null, null, null);
 		if (cursor.moveToFirst()) {

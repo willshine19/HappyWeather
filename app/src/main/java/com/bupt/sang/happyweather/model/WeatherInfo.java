@@ -1,5 +1,10 @@
 package com.bupt.sang.happyweather.model;
 
+import android.util.Log;
+
+import com.bupt.sang.happyweather.network.data.DailyResponse;
+import com.bupt.sang.happyweather.network.data.Location;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -7,6 +12,7 @@ import org.json.JSONObject;
  * Created by sang on 2016/5/11.
  */
 public class WeatherInfo {
+    private static final String TAG = "WeatherInfo";
     private String city;    // cityname
     private String cityid; // weatherId
     private String temp1;
@@ -42,6 +48,20 @@ public class WeatherInfo {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public WeatherInfo(DailyResponse response) {
+        Location location = response.results.get(0).location;
+        DailyResponse.Daily today = response.results.get(0).daily.get(0);
+        city = location.name;
+        cityid = location.id;
+        temp1 = today.low;
+        temp2 = today.high;
+        weather = today.text_day;
+        ptime = "8:00";
+        Log.d(TAG, "下载完成: city" + city);
+        Log.d(TAG, "下载完成: low" + temp1);
+        Log.d(TAG, "下载完成: high" + temp2);
     }
 
     /**
