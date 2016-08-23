@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.bupt.sang.happyweather.R;
+import com.bupt.sang.happyweather.model.WeatherInfo;
 import com.bupt.sang.happyweather.util.RefreshableView;
 
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ import rx.subjects.PublishSubject;
  */
 public class WeatherScreen {
 
+    private static final String TAG = "WeatherScreen";
     @Bind(R.id.syh_viewpager)
     ViewPager viewPager;
     @Bind(R.id.refreshable_view)
@@ -45,10 +48,12 @@ public class WeatherScreen {
     BaseAdapter sideListAdapter;
     MainPagerAdapter pagerAdapter;
     List<String> cityNames = new ArrayList<>();
+    private WeatherActivity activity;
+
     public PublishSubject<Integer> removeWeatherEvent = PublishSubject.create();
     public PublishSubject<Void> clickHomeEvent = PublishSubject.create();
     public PublishSubject<Void> addCityEvent = PublishSubject.create();
-    private WeatherActivity activity;
+    public PublishSubject<Integer> selectCityEvent = PublishSubject.create();
 
     public WeatherScreen(WeatherActivity activity, FragmentManager fm) {
         this.activity = activity;
@@ -71,7 +76,13 @@ public class WeatherScreen {
         clickHomeEvent.subscribe(new Action1<Void>() {
             @Override
             public void call(Void aVoid) {
-                openSlideMenu();
+                openSlideMenuAction();
+            }
+        });
+        selectCityEvent.subscribe(new Action1<Integer>() {
+            @Override
+            public void call(Integer integer) {
+                changeCityAction(integer);
             }
         });
     }
@@ -79,10 +90,7 @@ public class WeatherScreen {
     public void initViews() {
         cityNameTV.setText(cityNames.get(0));
 
-        // init ViewPager
-
         pagerAdapter = new MainPagerAdapter(fragmentManager, cityNames);
-
 
         // init ListView in DrawerLayout
         sideListAdapter = new BaseAdapter() {
@@ -111,15 +119,13 @@ public class WeatherScreen {
 
                     @Override
                     public void onClick(View view) {
-//                        removeWeather(i);
                         removeWeatherEvent.onNext(i);
                     }
                 });
                 tv.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        viewPager.setCurrentItem(i);
-                        mDrawerLayout.closeDrawer(GravityCompat.START);
+                        selectCityEvent.onNext(i);
                     }
                 });
                 return view;
@@ -149,8 +155,8 @@ public class WeatherScreen {
             public void onPageSelected(int position) {
                 String cityName = pagerAdapter.cityNames.get(position);
                 cityNameTV.setText(cityName);
-                // TODO: 2016/5/14 会卡
-                //		startForeGoundService(info);
+                // 会卡
+                // TODO: 16/8/23 info is null
             }
 
             @Override
@@ -173,9 +179,14 @@ public class WeatherScreen {
         }
     }
 
-    private void openSlideMenu() {
+    private void openSlideMenuAction() {
         if (!mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.openDrawer(GravityCompat.START);
         }
+    }
+
+    private void changeCityAction(int position) {
+        viewPager.setCurrentItem(position);
+        mDrawerLayout.closeDrawer(GravityCompat.START);
     }
 }

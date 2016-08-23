@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bupt.sang.happyweather.R;
 import com.bupt.sang.happyweather.model.WeatherInfo;
@@ -45,6 +46,8 @@ public class WeatherFragment extends Fragment {
     TextView temperatureLow;
     @Bind(R.id.temp_high)
     TextView temperatureHigh;
+    @Bind(R.id.temp_to)
+    TextView temperatureTo;
 
     public String cityName;
 
@@ -68,7 +71,13 @@ public class WeatherFragment extends Fragment {
         View root = inflater.inflate(R.layout.viewpager_content, parent, false);
         ButterKnife.bind(this, root);
         publishTime.setText("正在加载");
-        updateWeather();
+        WeatherActivity activity = (WeatherActivity) getActivity();
+        WeatherInfo info = activity.weatherMap.get(cityName);
+        if (info == null) {
+            updateRetrofit();
+        } else {
+            bind(info);
+        }
         return root;
     }
 
@@ -87,7 +96,6 @@ public class WeatherFragment extends Fragment {
                     public void call(DailyResponse response) {
                         WeatherInfo weatherInfo = new WeatherInfo(response);
                         bind(weatherInfo);
-
                     }
                 });
     }
@@ -96,13 +104,14 @@ public class WeatherFragment extends Fragment {
         ApiClient.getInstance().getDaily(cityName).enqueue(new Callback<DailyResponse>() {
             @Override
             public void onResponse(Call<DailyResponse> call, Response<DailyResponse> response) {
-                WeatherInfo weatherInfo = new WeatherInfo(response.body());
-                bind(weatherInfo);
+                WeatherInfo info = new WeatherInfo(response.body());
+                ((WeatherActivity) getActivity()).weatherMap.put(cityName, info);
+                bind(info);
             }
 
             @Override
             public void onFailure(Call<DailyResponse> call, Throwable t) {
-
+                Toast.makeText(getContext(), "下载失败", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -118,5 +127,6 @@ public class WeatherFragment extends Fragment {
         weatherDesp.setText(weatherInfo.getWeather());
         temperatureLow.setText(weatherInfo.getTemp1());
         temperatureHigh.setText(weatherInfo.getTemp2());
+        temperatureTo.setVisibility(View.VISIBLE);
     }
 }

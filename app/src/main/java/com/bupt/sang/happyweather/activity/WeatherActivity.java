@@ -8,31 +8,18 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.BaseAdapter;
 import android.widget.CheckBox;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import com.bupt.sang.happyweather.R;
-import com.bupt.sang.happyweather.util.RefreshableView;
+import com.bupt.sang.happyweather.model.WeatherInfo;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
-import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import rx.functions.Action1;
 
 public class WeatherActivity extends AppCompatActivity {
@@ -42,6 +29,7 @@ public class WeatherActivity extends AppCompatActivity {
 	private SharedPreferences preferences;
 	private WeatherPresenter presenter;
 	private WeatherScreen screen;
+	public HashMap<String, WeatherInfo> weatherMap = new HashMap<>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -55,13 +43,12 @@ public class WeatherActivity extends AppCompatActivity {
 		presenter = new WeatherPresenter(this);
 		screen = new WeatherScreen(this, fm);
 
-		initViews();
-
-
 		if (!preferences.getBoolean("dontShow", false) && !hasShowAbout) {
 			showAboutDialog();
 			hasShowAbout = true;
 		}
+
+		presenter.startForeGroundService();
 
 		screen.addCityEvent.subscribe(new Action1<Void>() {
 			@Override
@@ -71,6 +58,7 @@ public class WeatherActivity extends AppCompatActivity {
 		});
 	}
 
+	@Deprecated
 	private void initViews() {
 //		toolbar = (Toolbar) findViewById(R.id.toolbar);
 ////		setSupportActionBar(toolbar);
@@ -185,7 +173,7 @@ public class WeatherActivity extends AppCompatActivity {
 //			if (info == null) {
 //				return;
 //			}
-//			presenter.startForeGoundService(info);
+//			presenter.startForeGroundService(info);
 //			loadOnce = true;
 //		}
 //		if (cityNameList.size() > 0) {

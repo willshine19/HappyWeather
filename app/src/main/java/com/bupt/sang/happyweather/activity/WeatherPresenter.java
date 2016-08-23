@@ -2,10 +2,12 @@ package com.bupt.sang.happyweather.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.bupt.sang.happyweather.model.WeatherInfo;
 import com.bupt.sang.happyweather.network.ApiClient;
+import com.bupt.sang.happyweather.network.data.DailyResponse;
 import com.bupt.sang.happyweather.network.data.NowResponse;
 import com.bupt.sang.happyweather.service.ForegroundService;
 
@@ -17,7 +19,7 @@ import retrofit2.Response;
  * Created by sangyaohui on 16/8/21.
  */
 public class WeatherPresenter {
-
+    private static final String TAG = "WeatherPresenter";
     private Activity activity;
     public WeatherPresenter(Activity activity) {
         this.activity = activity;
@@ -37,11 +39,14 @@ public class WeatherPresenter {
         });
     }
 
-    public void startForeGoundService(final WeatherInfo info) {
-        new Thread() {
+    /**
+     * 只显示北京的天气，如果动态显示当前页城市的天气，滑动pager会有严重卡顿
+     */
+    public void startForeGroundService() {
+        ApiClient.getInstance().getDaily("北京").enqueue(new Callback<DailyResponse>() {
             @Override
-            public void run() {
-                super.run();
+            public void onResponse(Call<DailyResponse> call, Response<DailyResponse> response) {
+                WeatherInfo info = new WeatherInfo(response.body());
                 Intent intent = new Intent(activity, ForegroundService.class);
                 intent.putExtra("city_name", info.getCity());
                 intent.putExtra("temp1", info.getTemp1());
@@ -51,6 +56,11 @@ public class WeatherPresenter {
                 intent.putExtra("weather_code", info.getCityid());
                 activity.startService(intent);
             }
-        }.start();
+
+            @Override
+            public void onFailure(Call<DailyResponse> call, Throwable t) {
+
+            }
+        });
     }
 }
