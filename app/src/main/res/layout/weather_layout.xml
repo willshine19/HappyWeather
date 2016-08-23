@@ -21,7 +21,7 @@
             android:background="#484E61" >
 
             <Button
-                android:id="@+id/switch_city"
+                android:id="@+id/button_home"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_centerVertical="true"
@@ -55,20 +55,16 @@
             <!--app:titleTextColor="#ffffff"-->
             <!--app:popupTheme="@style/AppTheme.PopupOverlay" />-->
 
-        <!--<com.bupt.sang.happyweather.util.RefreshableView-->
-            <!--android:id="@+id/refreshable_view"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent">-->
-            <!--<android.support.v4.view.ViewPager-->
-                <!--android:id="@+id/syh_viewpager"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="match_parent"/>-->
-
-        <!--</com.bupt.sang.happyweather.util.RefreshableView>-->
-        <android.support.v4.view.ViewPager
-            android:id="@+id/syh_viewpager"
+        <com.bupt.sang.happyweather.util.RefreshableView
+            android:id="@+id/refreshable_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent">
+            <android.support.v4.view.ViewPager
+                android:id="@+id/syh_viewpager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        </com.bupt.sang.happyweather.util.RefreshableView>
 
     </LinearLayout>
 

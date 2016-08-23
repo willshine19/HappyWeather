@@ -25,6 +25,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.bupt.sang.happyweather.R;
+import com.bupt.sang.happyweather.util.RefreshableView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import rx.functions.Action1;
 
 public class WeatherActivity extends AppCompatActivity {
 
@@ -39,23 +41,7 @@ public class WeatherActivity extends AppCompatActivity {
 	private static boolean hasShowAbout = false;
 	private SharedPreferences preferences;
 	private WeatherPresenter presenter;
-
-	private List<String> cityNames = new ArrayList<>();
-
-	private BaseAdapter sideListAdapter;
-	private MainPagerAdapter pagerAdapter;
-
-	@Bind(R.id.syh_viewpager)
-	ViewPager viewPager;
-//	@Bind(R.id.refreshable_view)
-//	RefreshableView refreshableView;
-	@Bind(R.id.city_name)
-	TextView cityNameTV;
-	@Bind(R.id.left_drawer)
-	ListView mDrawList;
-	@Bind(R.id.drawer_layout)
-	DrawerLayout mDrawerLayout;
-
+	private WeatherScreen screen;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -63,114 +49,29 @@ public class WeatherActivity extends AppCompatActivity {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.weather_layout);
 		ButterKnife.bind(this);
-
-;
+		FragmentManager fm = getSupportFragmentManager();
+		preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
 		presenter = new WeatherPresenter(this);
+		screen = new WeatherScreen(this, fm);
 
 		initViews();
 
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
-		if (!prefs.getBoolean("dontShow", false) && !hasShowAbout) {
+
+		if (!preferences.getBoolean("dontShow", false) && !hasShowAbout) {
 			showAboutDialog();
 			hasShowAbout = true;
 		}
+
+		screen.addCityEvent.subscribe(new Action1<Void>() {
+			@Override
+			public void call(Void aVoid) {
+				startChooseWeatherActivity();
+			}
+		});
 	}
 
 	private void initViews() {
-		preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		int weatherNum = preferences.getInt("weather_num", 0);
-		for (int i = 0; i < weatherNum; i++) {
-			String cityName = preferences.getString("weather" + i, null);
-			if (cityName != null) cityNames.add(cityName);
-		}
-
-		if (cityNames.isEmpty()) {
-			cityNames.add("北京");
-			cityNames.add("天津");
-			cityNames.add("青岛");
-		}
-
-		cityNameTV.setText(cityNames.get(0));
-
-//		refreshableView.setOnRefreshListener(new RefreshableView.PullToRefreshListener() {
-//			public void onRefresh() {
-//				try {
-//					Thread.sleep(300);
-////					refreshWeather();
-//				} catch (InterruptedException e) {
-//					e.printStackTrace();
-//				}
-//				refreshableView.finishRefreshing();
-//			}
-//		}, 0);
-
-		// init ViewPager
-		FragmentManager fm = getSupportFragmentManager();
-		pagerAdapter = new MainPagerAdapter(fm, cityNames);
-		viewPager.setAdapter(pagerAdapter);
-		viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-			@Override
-			public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-			}
-
-			@Override
-			public void onPageSelected(int position) {
-				String cityName = pagerAdapter.cityNames.get(position);
-				cityNameTV.setText(cityName);
-				// TODO: 2016/5/14 会卡
-		//		startForeGoundService(info);
-			}
-
-			@Override
-			public void onPageScrollStateChanged(int state) {
-			}
-		});
-
-		// init ListView in DrawerLayout
-		sideListAdapter = new BaseAdapter() {
-			@Override
-			public int getCount() {
-				return cityNames.size();
-			}
-
-			@Override
-			public Object getItem(int i) {
-				return cityNames.get(i);
-			}
-
-			@Override
-			public long getItemId(int i) {
-				return i;
-			}
-
-			@Override
-			public View getView(final int i, View view, ViewGroup viewGroup) {
-				LayoutInflater inflater = LayoutInflater.from(WeatherActivity.this);
-				view = inflater.inflate(R.layout.list_item, viewGroup, false);
-				TextView tv = (TextView) view.findViewById(R.id.list_item_city_name);
-				tv.setText(cityNames.get(i));
-				view.findViewById(R.id.list_item_delete).setOnClickListener(new View.OnClickListener() {
-
-					@Override
-					public void onClick(View view) {
-						removeWeather(i);
-					}
-				});
-				tv.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View view) {
-							viewPager.setCurrentItem(i);
-							mDrawerLayout.closeDrawer(GravityCompat.START);
-					}
-				});
-				return view;
-			}
-		};
-		mDrawList.setAdapter(sideListAdapter);
-
-
-
 //		toolbar = (Toolbar) findViewById(R.id.toolbar);
 ////		setSupportActionBar(toolbar);
 //		toolbar.setTitle("北京");
@@ -186,9 +87,9 @@ public class WeatherActivity extends AppCompatActivity {
 		super.onNewIntent(intent);
 		Log.d(TAG, "onNewIntent: start");
 		String cityName = intent.getStringExtra("city_name");
-		if (!TextUtils.isEmpty(cityName) && !cityNames.contains(cityName)) {
-			cityNames.add(cityName);
-			pagerAdapter.updateCities(cityNames);
+		if (!TextUtils.isEmpty(cityName) && !screen.cityNames.contains(cityName)) {
+			screen.cityNames.add(cityName);
+			screen.pagerAdapter.updateCities(screen.cityNames);
 		}
 
 	}
@@ -197,30 +98,14 @@ public class WeatherActivity extends AppCompatActivity {
 	protected void onDestroy() {
 		super.onDestroy();
 		SharedPreferences.Editor editor = preferences.edit();
-		editor.putInt("weather_num", cityNames.size());
-		for (int i = 0; i < cityNames.size(); i++) {
-			editor.putString("weather" + i, cityNames.get(i));
+		editor.putInt("weather_num", screen.cityNames.size());
+		for (int i = 0; i < screen.cityNames.size(); i++) {
+			editor.putString("weather" + i, screen.cityNames.get(i));
 		}
 		editor.apply();
 	}
 
-	@OnClick({R.id.switch_city, R.id.add_city})
-	void clickButtons(View v) {
-		switch (v.getId()) {
-			case R.id.switch_city:
-				if (!mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-					mDrawerLayout.openDrawer(GravityCompat.START);
-				}
-				break;
-			case R.id.add_city:
-				Intent intent2 = new Intent(this, ChooseAreaActivity.class);
-				intent2.putExtra("from_weather_activity", true);
-				startActivity(intent2);
-				break;
-			default:
-				break;
-		}
-	}
+
 
 	/**
 	 * 刷新当前天气
@@ -229,13 +114,13 @@ public class WeatherActivity extends AppCompatActivity {
 	}
 
 	private void removeWeather(int positon) {
-		cityNames.remove(positon);
-		sideListAdapter.notifyDataSetChanged();
-		pagerAdapter.updateCities(cityNames);
-		if (viewPager.getCurrentItem() == positon) {
-			int newPosition = positon == cityNames.size() ? positon - 1 : positon;
-			viewPager.setCurrentItem(newPosition);
-			cityNameTV.setText(cityNames.get(newPosition));
+		screen.cityNames.remove(positon);
+		screen.sideListAdapter.notifyDataSetChanged();
+		screen.pagerAdapter.updateCities(screen.cityNames);
+		if (screen.viewPager.getCurrentItem() == positon) {
+			int newPosition = positon == screen.cityNames.size() ? positon - 1 : positon;
+			screen.viewPager.setCurrentItem(newPosition);
+			screen.cityNameTV.setText(screen.cityNames.get(newPosition));
 		}
 	}
 
@@ -329,6 +214,10 @@ public class WeatherActivity extends AppCompatActivity {
 //		sideListAdapter.notifyDataSetChanged();
 //	}
 
-
+	public void startChooseWeatherActivity() {
+		Intent intent2 = new Intent(this, ChooseAreaActivity.class);
+		intent2.putExtra("from_weather_activity", true);
+		startActivity(intent2);
+	}
 
 }
