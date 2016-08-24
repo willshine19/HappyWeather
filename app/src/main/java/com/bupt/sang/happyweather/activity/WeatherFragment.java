@@ -104,6 +104,7 @@ public class WeatherFragment extends Fragment {
         ApiClient.getInstance().getDaily(cityName).enqueue(new Callback<DailyResponse>() {
             @Override
             public void onResponse(Call<DailyResponse> call, Response<DailyResponse> response) {
+                Log.d(TAG, "onResponse: " + response.isSuccessful());
                 WeatherInfo info = new WeatherInfo(response.body());
                 ((WeatherActivity) getActivity()).weatherMap.put(cityName, info);
                 bind(info);

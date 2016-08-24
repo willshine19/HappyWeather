@@ -155,8 +155,7 @@ public class WeatherScreen {
             public void onPageSelected(int position) {
                 String cityName = pagerAdapter.cityNames.get(position);
                 cityNameTV.setText(cityName);
-                // 会卡
-                // TODO: 16/8/23 info is null
+                // 如果把打开前台服务放在这里，会卡
             }
 
             @Override
@@ -179,12 +178,19 @@ public class WeatherScreen {
         }
     }
 
+    /**
+     * 打开侧滑菜单
+     */
     private void openSlideMenuAction() {
         if (!mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.openDrawer(GravityCompat.START);
         }
     }
 
+    /**
+     * 切换ViewPager中的天气页
+     * @param position
+     */
     private void changeCityAction(int position) {
         viewPager.setCurrentItem(position);
         mDrawerLayout.closeDrawer(GravityCompat.START);

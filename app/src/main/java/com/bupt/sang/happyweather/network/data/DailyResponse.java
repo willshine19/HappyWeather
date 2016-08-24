@@ -11,6 +11,7 @@ public final class DailyResponse {
     public class Result {
         public Location location;
         public List<Daily> daily;
+        public String last_update;
     }
 
     public class Daily {

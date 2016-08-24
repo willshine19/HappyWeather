@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.widget.CheckBox;
 
@@ -29,6 +30,7 @@ public class WeatherActivity extends AppCompatActivity {
 	private SharedPreferences preferences;
 	private WeatherPresenter presenter;
 	private WeatherScreen screen;
+	// 保存已下载的天气信息
 	public HashMap<String, WeatherInfo> weatherMap = new HashMap<>();
 
 	@Override
@@ -56,19 +58,13 @@ public class WeatherActivity extends AppCompatActivity {
 				startChooseWeatherActivity();
 			}
 		});
+		screen.removeWeatherEvent.subscribe(new Action1<Integer>() {
+			@Override
+			public void call(Integer position) {
+				removeWeather(position);
+			}
+		});
 	}
-
-	@Deprecated
-	private void initViews() {
-//		toolbar = (Toolbar) findViewById(R.id.toolbar);
-////		setSupportActionBar(toolbar);
-//		toolbar.setTitle("北京");
-//
-//		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, R.string.open, R.string.close);
-//		mDrawerLayout.setDrawerListener(toggle);
-//		toggle.syncState();
-	}
-
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -77,9 +73,19 @@ public class WeatherActivity extends AppCompatActivity {
 		String cityName = intent.getStringExtra("city_name");
 		if (!TextUtils.isEmpty(cityName) && !screen.cityNames.contains(cityName)) {
 			screen.cityNames.add(cityName);
+			screen.sideListAdapter.notifyDataSetChanged();
 			screen.pagerAdapter.updateCities(screen.cityNames);
+			screen.viewPager.setAdapter(screen.pagerAdapter); // 这一步很关键，强制刷新adapter
+			if (screen.viewPager.getVisibility() == View.GONE) {
+				screen.viewPager.setVisibility(View.VISIBLE);
+			}
+			if (screen.refreshableView.getVisibility() == View.GONE) {
+				screen.refreshableView.setVisibility(View.VISIBLE);
+			}
+			if (screen.cityNames.size() == 1) {
+				screen.cityNameTV.setText(screen.cityNames.get(0));
+			}
 		}
-
 	}
 
 	@Override
@@ -93,27 +99,30 @@ public class WeatherActivity extends AppCompatActivity {
 		editor.apply();
 	}
 
-
-
 	/**
 	 * 刷新当前天气
 	 */
 	private void refreshWeather() {
 	}
 
-	private void removeWeather(int positon) {
-		screen.cityNames.remove(positon);
+	private void removeWeather(int position) {
+		if (screen.cityNames.size() == 1) {
+			screen.viewPager.setVisibility(View.GONE);
+			screen.refreshableView.setVisibility(View.GONE);
+			screen.cityNameTV.setText("请选择城市");
+		}
+		screen.cityNames.remove(position);
 		screen.sideListAdapter.notifyDataSetChanged();
 		screen.pagerAdapter.updateCities(screen.cityNames);
-		if (screen.viewPager.getCurrentItem() == positon) {
-			int newPosition = positon == screen.cityNames.size() ? positon - 1 : positon;
+		if (screen.cityNames.size() == 0) {
+			return;
+		}
+		if (screen.viewPager.getCurrentItem() == position) {
+			int newPosition = position == screen.cityNames.size() ? position - 1 : position;
 			screen.viewPager.setCurrentItem(newPosition);
 			screen.cityNameTV.setText(screen.cityNames.get(newPosition));
 		}
 	}
-
-
-
 
 	/**
 	 * 首次启动app时，显示一个About对话框
@@ -131,7 +140,7 @@ public class WeatherActivity extends AppCompatActivity {
 			public void onClick(DialogInterface dialog, int which) {
 				SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
 				edit.putBoolean("dontShow", checkBox.isChecked());
-				edit.commit();
+				edit.apply();
 			}
 		});
 		builder.setNegativeButton("关于作者", new DialogInterface.OnClickListener() {
@@ -186,21 +195,6 @@ public class WeatherActivity extends AppCompatActivity {
 ////		startService(intent);
 //	}
 
-	/**
-	 * 该adapter是左边栏里面的ListView的
-	 */
-//	private void updateListAdapter() {
-//		cityNames.clear();
-//		for (int i = 0; i < cityNames.size(); i++) {
-//			WeatherInfo info = weatherIdWeatherInfoMap.get(weatherIdList.get(i));
-//			if (info != null) {
-//				cityNameList.add(info.getCity());
-//			} else {
-//				cityNameList.add(weatherIdList.get(i));
-//			}
-//		}
-//		sideListAdapter.notifyDataSetChanged();
-//	}
 
 	public void startChooseWeatherActivity() {
 		Intent intent2 = new Intent(this, ChooseAreaActivity.class);
