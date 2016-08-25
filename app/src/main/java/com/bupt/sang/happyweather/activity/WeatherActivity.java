@@ -14,13 +14,19 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.CheckBox;
+import android.widget.Toast;
 
 import com.bupt.sang.happyweather.R;
 import com.bupt.sang.happyweather.model.WeatherInfo;
+import com.bupt.sang.happyweather.network.ApiClient;
+import com.bupt.sang.happyweather.network.data.DailyResponse;
 
 import java.util.HashMap;
 
 import butterknife.ButterKnife;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import rx.functions.Action1;
 
 public class WeatherActivity extends AppCompatActivity {
@@ -28,8 +34,9 @@ public class WeatherActivity extends AppCompatActivity {
 	private static final String TAG = "WeatherActivity";
 	private static boolean hasShowAbout = false;
 	private SharedPreferences preferences;
-	private WeatherPresenter presenter;
-	private WeatherScreen screen;
+	public WeatherPresenter presenter;
+	public WeatherScreen screen;
+
 	// 保存已下载的天气信息
 	public HashMap<String, WeatherInfo> weatherMap = new HashMap<>();
 
@@ -64,6 +71,12 @@ public class WeatherActivity extends AppCompatActivity {
 				removeWeather(position);
 			}
 		});
+		screen.refreshWeatherEvent.subscribe(new Action1<Void>() {
+			@Override
+			public void call(Void aVoid) {
+				refreshWeather();
+			}
+		});
 	}
 
 	@Override
@@ -75,11 +88,8 @@ public class WeatherActivity extends AppCompatActivity {
 			screen.cityNames.add(cityName);
 			screen.sideListAdapter.notifyDataSetChanged();
 			screen.pagerAdapter.updateCities(screen.cityNames);
-			screen.viewPager.setAdapter(screen.pagerAdapter); // 这一步很关键，强制刷新adapter
-			if (screen.viewPager.getVisibility() == View.GONE) {
-				screen.viewPager.setVisibility(View.VISIBLE);
-			}
 			if (screen.refreshableView.getVisibility() == View.GONE) {
+				screen.viewPager.setAdapter(screen.pagerAdapter); // 这一步很关键，强制刷新adapter
 				screen.refreshableView.setVisibility(View.VISIBLE);
 			}
 			if (screen.cityNames.size() == 1) {
@@ -100,14 +110,38 @@ public class WeatherActivity extends AppCompatActivity {
 	}
 
 	/**
-	 * 刷新当前天气
+	 * 刷新所有天气
 	 */
 	private void refreshWeather() {
+		weatherMap.clear();
+		for (String cityName : screen.cityNames) {
+			ApiClient.getInstance().getDaily(cityName).enqueue(new Callback<DailyResponse>() {
+				@Override
+				public void onResponse(Call<DailyResponse> call, Response<DailyResponse> response) {
+					WeatherInfo info = new WeatherInfo(response.body());
+					weatherMap.put(info.getCity(), info);
+					if (weatherMap.size() == screen.cityNames.size()) {
+						// TODO: 16/8/24 会自动回到第一页
+						int tempPosition = screen.viewPager.getCurrentItem();
+						screen.viewPager.setAdapter(screen.pagerAdapter);
+						screen.viewPager.setCurrentItem(tempPosition);
+						screen.refreshableView.finishRefreshing();
+					}
+				}
+
+				@Override
+				public void onFailure(Call<DailyResponse> call, Throwable t) {
+					screen.refreshableView.finishRefreshing();
+
+					// TODO: 16/8/24 会提示很多次
+					Toast.makeText(WeatherActivity.this, "下载失败", Toast.LENGTH_SHORT).show();
+				}
+			});
+		}
 	}
 
 	private void removeWeather(int position) {
 		if (screen.cityNames.size() == 1) {
-			screen.viewPager.setVisibility(View.GONE);
 			screen.refreshableView.setVisibility(View.GONE);
 			screen.cityNameTV.setText("请选择城市");
 		}

@@ -47,14 +47,6 @@
                 android:background="@android:drawable/ic_menu_add" />
         </RelativeLayout>
         
-        <!--<android.support.v7.widget.Toolbar-->
-            <!--android:id="@+id/toolbar"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="?attr/actionBarSize"-->
-            <!--android:background="?attr/colorPrimary"-->
-            <!--app:titleTextColor="#ffffff"-->
-            <!--app:popupTheme="@style/AppTheme.PopupOverlay" />-->
-
         <com.bupt.sang.happyweather.util.RefreshableView
             android:id="@+id/refreshable_view"
             android:layout_width="match_parent"

@@ -52,29 +52,10 @@ public class RefreshableView extends LinearLayout {
 	 */
 	public static final int SCROLL_SPEED = -20;
 
-	/**
-	 * 一分钟的毫秒值，用于判断上次的更新时间
-	 */
 	public static final long ONE_MINUTE = 60 * 1000;
-
-	/**
-	 * 一小时的毫秒值，用于判断上次的更新时间
-	 */
 	public static final long ONE_HOUR = 60 * ONE_MINUTE;
-
-	/**
-	 * 一天的毫秒值，用于判断上次的更新时间
-	 */
 	public static final long ONE_DAY = 24 * ONE_HOUR;
-
-	/**
-	 * 一月的毫秒值，用于判断上次的更新时间
-	 */
 	public static final long ONE_MONTH = 30 * ONE_DAY;
-
-	/**
-	 * 一年的毫秒值，用于判断上次的更新时间
-	 */
 	public static final long ONE_YEAR = 12 * ONE_MONTH;
 
 	/**
@@ -430,6 +411,7 @@ public class RefreshableView extends LinearLayout {
 			case MotionEvent.ACTION_DOWN: // 记录位置
 				point.x = (int) ev.getX();
 				point.y = (int) ev.getY();
+				yDown = ev.getRawY();
 				break;
 
 			case MotionEvent.ACTION_MOVE: // 判断方向
@@ -472,6 +454,7 @@ public class RefreshableView extends LinearLayout {
 		}
 		switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN:
+				// 这里不会被执行到，因为down事件在判断左右滑动时就已经被消耗了
 				yDown = event.getRawY(); // 记录下手指按下的y坐标
 				break;
 			case MotionEvent.ACTION_MOVE:

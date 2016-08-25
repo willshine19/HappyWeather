@@ -1,11 +1,13 @@
 package com.bupt.sang.happyweather.activity;
 
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,6 +56,7 @@ public class WeatherScreen {
     public PublishSubject<Void> clickHomeEvent = PublishSubject.create();
     public PublishSubject<Void> addCityEvent = PublishSubject.create();
     public PublishSubject<Integer> selectCityEvent = PublishSubject.create();
+    public PublishSubject<Void> refreshWeatherEvent = PublishSubject.create();
 
     public WeatherScreen(WeatherActivity activity, FragmentManager fm) {
         this.activity = activity;
@@ -135,9 +138,10 @@ public class WeatherScreen {
 
         refreshableView.setOnRefreshListener(new RefreshableView.PullToRefreshListener() {
             public void onRefresh() {
+                // 子线程
+                refreshWeatherEvent.onNext(null);
                 try {
-                    Thread.sleep(300);
-//					refreshWeather();
+                    Thread.sleep(1500);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
