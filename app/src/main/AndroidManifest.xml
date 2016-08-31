@@ -3,6 +3,8 @@
     package="com.bupt.sang.happyweather" >
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
 
     <application
         android:name=".app.AppController"
@@ -26,6 +28,8 @@
         <service android:name="com.bupt.sang.happyweather.service.AutoUpdateService" />
         <receiver android:name="com.bupt.sang.happyweather.receiver.AutoUpdateReceiver" />
         <service android:name=".service.ForegroundService" />
+        <service android:name=".floating.FloatWindowService"></service>
+
     </application>
 
 </manifest>

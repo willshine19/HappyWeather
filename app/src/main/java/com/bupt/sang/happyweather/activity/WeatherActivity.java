@@ -17,6 +17,7 @@ import android.widget.CheckBox;
 import android.widget.Toast;
 
 import com.bupt.sang.happyweather.R;
+import com.bupt.sang.happyweather.floating.FloatWindowService;
 import com.bupt.sang.happyweather.model.WeatherInfo;
 import com.bupt.sang.happyweather.network.ApiClient;
 import com.bupt.sang.happyweather.network.data.DailyResponse;
@@ -77,6 +78,7 @@ public class WeatherActivity extends AppCompatActivity {
 				refreshWeather();
 			}
 		});
+		startFloating();
 	}
 
 	@Override
@@ -234,6 +236,14 @@ public class WeatherActivity extends AppCompatActivity {
 		Intent intent2 = new Intent(this, ChooseAreaActivity.class);
 		intent2.putExtra("from_weather_activity", true);
 		startActivity(intent2);
+	}
+
+	/**
+	 * 打开悬浮窗
+	 */
+	private void startFloating() {
+		Intent intent = new Intent(this, FloatWindowService.class);
+		startService(intent);
 	}
 
 }
