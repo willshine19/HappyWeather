@@ -27,12 +27,21 @@ public class ApiClient {
                 .build();
         networkApi = retrofit.create(NetworkApi.class);
     }
-    
 
+    /**
+     * 当前温度
+     * @param location 城市名 北京 beijing都可以
+     * @return
+     */
     public Call<NowResponse> getWeather(String location) {
         return networkApi.getWeather(Constants.KEY, location, Constants.LANGUAGE, Constants.UNIT_TEMPRATURE);
     }
 
+    /**
+     * 今日天气和天气预报
+     * @param location
+     * @return
+     */
     public Call<DailyResponse> getDaily(String location) {
         return networkApi.getDaily(Constants.KEY, location, Constants.LANGUAGE, Constants.UNIT_TEMPRATURE, 0, 5);
     }

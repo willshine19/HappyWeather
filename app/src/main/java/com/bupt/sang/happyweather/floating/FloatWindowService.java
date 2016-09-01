@@ -9,14 +9,23 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
+
+import com.bupt.sang.happyweather.network.ApiClient;
+import com.bupt.sang.happyweather.network.data.NowResponse;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class FloatWindowService extends Service {
 
+	private static final String TAG = "FloatWindowService";
 	/**
 	 * 用于在线程中创建或移除悬浮窗。
 	 */
@@ -26,6 +35,12 @@ public class FloatWindowService extends Service {
 	 * 定时器，定时进行检测当前应该创建还是移除悬浮窗。
 	 */
 	private Timer timer;
+
+	private String temperature;
+	private String weatherDesc;
+	private String cityName;
+
+	public static final String CITY = "北京";
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -39,6 +54,19 @@ public class FloatWindowService extends Service {
 			timer = new Timer();
 			timer.scheduleAtFixedRate(new RefreshTask(), 0, 500);
 		}
+		ApiClient.getInstance().getWeather(CITY).enqueue(new Callback<NowResponse>() {
+			@Override
+			public void onResponse(Call<NowResponse> call, Response<NowResponse> response) {
+				temperature = response.body().results.get(0).now.temperature;
+				weatherDesc = response.body().results.get(0).now.text;
+				cityName = response.body().results.get(0).location.name;
+			}
+
+			@Override
+			public void onFailure(Call<NowResponse> call, Throwable t) {
+				Log.e(TAG, "onFailure: ", t);
+			}
+		});
 		return super.onStartCommand(intent, flags, startId);
 	}
 
@@ -78,7 +106,10 @@ public class FloatWindowService extends Service {
 				handler.post(new Runnable() {
 					@Override
 					public void run() {
-						MyWindowManager.updateUsedPercent(getApplicationContext());
+//						MyWindowManager.updateUsedPercent(getApplicationContext());
+						if (temperature != null && weatherDesc != null && cityName != null) {
+							MyWindowManager.updateWeather(temperature, weatherDesc, cityName);
+						}
 					}
 				});
 			}

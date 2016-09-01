@@ -137,8 +137,19 @@ public class MyWindowManager {
 	 */
 	public static void updateUsedPercent(Context context) {
 		if (smallWindow != null) {
-			TextView percentView = (TextView) smallWindow.findViewById(R.id.percent);
+			TextView percentView = (TextView) smallWindow.findViewById(R.id.temperature);
 			percentView.setText(getUsedPercentValue(context));
+		}
+	}
+
+	public static void updateWeather(String temperature, String weather, String city) {
+		if (smallWindow != null) {
+			TextView cityTv = (TextView) smallWindow.findViewById(R.id.city);
+			TextView percentView = (TextView) smallWindow.findViewById(R.id.temperature);
+			TextView weatherDesc = (TextView) smallWindow.findViewById(R.id.weather_desp);
+			cityTv.setText(city);
+			percentView.setText(String.valueOf(temperature));
+			weatherDesc.setText(weather);
 		}
 	}
 
