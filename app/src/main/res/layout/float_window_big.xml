@@ -8,12 +8,12 @@
 	android:orientation="vertical"
     >
     <Button 
-        android:id="@+id/close"
+        android:id="@+id/enter_app"
         android:layout_width="100dip"
         android:layout_height="40dip"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="12dip"
-        android:text="关闭悬浮窗"
+        android:text="进入应用"
         />
     <Button 
         android:id="@+id/back"

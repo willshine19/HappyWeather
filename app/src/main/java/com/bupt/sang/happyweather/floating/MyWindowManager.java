@@ -103,13 +103,13 @@ public class MyWindowManager {
 			bigWindow = new FloatWindowBigView(context);
 			if (bigWindowParams == null) {
 				bigWindowParams = new LayoutParams();
-				bigWindowParams.x = screenWidth / 2 - FloatWindowBigView.viewWidth / 2;
-				bigWindowParams.y = screenHeight / 2 - FloatWindowBigView.viewHeight / 2;
+				bigWindowParams.x = screenWidth / 2 - bigWindow.getViewWidth() / 2;
+				bigWindowParams.y = screenHeight / 2 - bigWindow.getViewHeight() / 2;
 				bigWindowParams.type = LayoutParams.TYPE_PHONE;
 				bigWindowParams.format = PixelFormat.RGBA_8888;
 				bigWindowParams.gravity = Gravity.LEFT | Gravity.TOP;
-				bigWindowParams.width = FloatWindowBigView.viewWidth;
-				bigWindowParams.height = FloatWindowBigView.viewHeight;
+				bigWindowParams.width = bigWindow.getViewWidth();
+				bigWindowParams.height = bigWindow.getViewHeight();
 			}
 			windowManager.addView(bigWindow, bigWindowParams);
 		}
@@ -129,18 +129,6 @@ public class MyWindowManager {
 		}
 	}
 
-	/**
-	 * 更新小悬浮窗的TextView上的数据，显示内存使用的百分比。
-	 * 
-	 * @param context
-	 *            可传入应用程序上下文。
-	 */
-	public static void updateUsedPercent(Context context) {
-		if (smallWindow != null) {
-			TextView percentView = (TextView) smallWindow.findViewById(R.id.temperature);
-			percentView.setText(getUsedPercentValue(context));
-		}
-	}
 
 	public static void updateWeather(String temperature, String weather, String city) {
 		if (smallWindow != null) {
@@ -176,56 +164,6 @@ public class MyWindowManager {
 		return mWindowManager;
 	}
 
-	/**
-	 * 如果ActivityManager还未创建，则创建一个新的ActivityManager返回。否则返回当前已创建的ActivityManager。
-	 * 
-	 * @param context
-	 *            可传入应用程序上下文。
-	 * @return ActivityManager的实例，用于获取手机可用内存。
-	 */
-	private static ActivityManager getActivityManager(Context context) {
-		if (mActivityManager == null) {
-			mActivityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-		}
-		return mActivityManager;
-	}
 
-	/**
-	 * 计算已使用内存的百分比，并返回。
-	 * 
-	 * @param context
-	 *            可传入应用程序上下文。
-	 * @return 已使用内存的百分比，以字符串形式返回。
-	 */
-	public static String getUsedPercentValue(Context context) {
-		String dir = "/proc/meminfo";
-		try {
-			FileReader fr = new FileReader(dir);
-			BufferedReader br = new BufferedReader(fr, 2048);
-			String memoryLine = br.readLine();
-			String subMemoryLine = memoryLine.substring(memoryLine.indexOf("MemTotal:"));
-			br.close();
-			long totalMemorySize = Integer.parseInt(subMemoryLine.replaceAll("\\D+", ""));
-			long availableSize = getAvailableMemory(context) / 1024;
-			int percent = (int) ((totalMemorySize - availableSize) / (float) totalMemorySize * 100);
-			return percent + "%";
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return "悬浮窗";
-	}
-
-	/**
-	 * 获取当前可用内存，返回数据以字节为单位。
-	 * 
-	 * @param context
-	 *            可传入应用程序上下文。
-	 * @return 当前可用内存。
-	 */
-	private static long getAvailableMemory(Context context) {
-		ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
-		getActivityManager(context).getMemoryInfo(mi);
-		return mi.availMem;
-	}
 
 }
